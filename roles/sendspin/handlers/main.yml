@@ -1,0 +1,13 @@
+---
+
+- name: Restart sendspin sinks
+  ansible.builtin.systemd:
+    name: "sendspin@{{ item.name }}.service"
+    daemon_reload: yes
+    state: restarted
+    masked: no
+    enabled: yes
+  loop: "{{ sendspin_sinks }}"
+  loop_control:
+    label: "{{ item.name }}"
+  ignore_errors: "{{ ansible_check_mode }}"

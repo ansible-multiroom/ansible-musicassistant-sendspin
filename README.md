@@ -33,16 +33,20 @@ pre made container for audio assistant but installed it from source.
 
 ### Ansible Roles
 
-Base Roles:
+For sendspin: 
 
-* `asound_conf`
+* `asound_conf`: Configures 
+   * a default data rate for `dsnoop` and `dmix` devices
+   * a simple alias name for the dmix device of the hifiberry audio card. This is because
+     sendspin is unable to parse an alsa device string 
+     like `dmix:CARD=sndrpihifiberry,DEV=0` (containing `:`, `=` and `,` characters)
+* `sendspin`: Configures as many sendspin audio sinks as defined in the `sendspin_sinks` list of dicts.
+
+WIP 
+
 * `python314` (required for musicassistant)
 * `smb_mount`
-
-Feature roles
-
-* sendspin
-* musicassistant
+* `musicassistant`
 
 Planned, but roles not defined yet:
 

@@ -1,0 +1,56 @@
+---
+
+- name: Install pip and venv
+  ansible.builtin.apt:
+    name: 
+      - python3-pip
+      - python3-venv
+      - libportaudio2
+    state: present
+  notify: Restart sendspin sinks
+
+- name: Create user for sendspin
+  ansible.builtin.user:
+    name: sendspin
+    system: true
+    groups: audio
+    shell: /usr/sbin/nologin
+  notify: Restart sendspin sinks
+
+- name: Create install dir
+  ansible.builtin.file:
+    path: /opt/sendspin
+    state: directory
+    owner: sendspin
+    group: sendspin
+    mode: '0755'
+  notify: Restart sendspin sinks
+
+- name: pip install sendspin
+  ansible.builtin.pip:
+    name: sendspin
+    virtualenv: /opt/sendspin
+    virtualenv_command: python3 -m venv
+  register: sendspin_pip
+  ignore_errors: "{{ ansible_check_mode }}"
+  notify: Restart sendspin sinks
+
+- name: Generate env files for sendspin instances
+  ansible.builtin.template:
+    src: "etc/default/sendspin-.j2"
+    dest: "/etc/default/sendspin-{{ item.name }}"
+    owner: root
+    group: root
+    mode: '0640'
+  loop: "{{ sendspin_sinks | default ([]) }}"
+  register: sendspin_configs
+  notify: Restart sendspin sinks
+
+- name: install systemd template for sendspin
+  ansible.builtin.template:
+    src: "etc/systemd/system/sendspin@.service.j2"
+    dest: "/etc/systemd/system/sendspin@.service"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart sendspin sinks

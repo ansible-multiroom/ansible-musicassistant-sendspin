@@ -1,0 +1,6 @@
+# {{ warning_message }}
+SENDSPIN_NAME="{{ inventory_hostname }}-{{ item.name}}"
+SENDSPIN_DEVICE="{{ sendspin_audio_sink }}"
+SENDSPIN_PORT="{{ item.port }}"
+SENDSPIN_FORMAT="{{ sendspin_audioformat }}"
+SENDSPIN_SERVER_URL="ws://{{ item.music_assistant_server_dns }}:{{ sendspin_server_port }}/sendspin"

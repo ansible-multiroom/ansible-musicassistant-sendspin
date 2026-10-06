@@ -1,0 +1,26 @@
+# {{ warning_message }}
+
+defaults.pcm.dmix.rate {{ asound_conf_audio_rate }}
+defaults.pcm.dmix.format {{ asound_conf_audio_format }}
+defaults.pcm.dsnoop.rate {{ asound_conf_audio_rate }}
+defaults.pcm.dsnoop.format {{ asound_conf_audio_format }}
+
+pcm.{{ asound_conf_dmix_name }} {
+    type dmix
+    ipc_key 1024
+    ipc_perm 0666
+    slave {
+        pcm "{{ asound_conf_hw_hifiberry }}"
+        format {{ asound_conf_audio_format }}
+        rate {{ asound_conf_audio_rate }}
+        channels 2
+        period_time 0
+        period_size 1024
+        buffer_size 8192
+    }
+}
+
+# Hides the hardware mixer from this dmix device
+ctl.{{ asound_conf_dmix_name }} {
+    type null
+}
