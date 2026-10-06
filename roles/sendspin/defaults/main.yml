@@ -1,0 +1,5 @@
+---
+
+sendspin_audio_sink: "{{ asound_conf_dmix_name }}"
+sendspin_audioformat: "pcm:{{ asound_conf_audio_rate }}:{{ asound_conf_sample_size }}:2"
+sendspin_server_port: 8927

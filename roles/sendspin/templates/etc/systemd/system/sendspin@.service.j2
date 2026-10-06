@@ -1,0 +1,16 @@
+# {{ warning_message }}
+[Unit]
+Description=Sendspin Client Daemon Instance %I
+After=network.target
+
+[Service]
+Type=simple
+User=sendspin
+Group=audio
+EnvironmentFile=/etc/default/sendspin-%i
+ExecStart=/opt/sendspin/bin/sendspin daemon --url "$SENDSPIN_SERVER_URL" --port $SENDSPIN_PORT --name "$SENDSPIN_NAME" --audio-device "$SENDSPIN_DEVICE" --audio-format "$SENDSPIN_FORMAT"
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

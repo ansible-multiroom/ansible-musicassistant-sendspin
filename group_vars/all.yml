@@ -1,0 +1,15 @@
+---
+
+# generic settings
+
+warning_message: "WARNING: This file is managed with Ansible, see https://github.com/ansible-multiroom/ansible-musicassistant-sendspin"
+
+# to be removed when restarting with clean os again:
+ansible_python_interpreter: /usr/bin/python
+
+# sendspin sinks are configured identically on all hosts
+sendspin_sinks:
+  - name: "navitest-out"
+    port: 8928
+    music_assistant_server_dns: "navitest.iselin.net"
+    device: "{{ sendspin_audio_sink }}"

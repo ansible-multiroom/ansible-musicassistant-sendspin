@@ -1,0 +1,8 @@
+---
+
+- name: Configure sendspin and musicassistant
+  hosts: all
+  become: true
+  roles:
+    - asound_conf
+    - sendspin

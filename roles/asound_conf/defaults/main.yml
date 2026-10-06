@@ -1,0 +1,6 @@
+asound_conf_audio_rate: "44100"
+asound_conf_sample_size: "16"
+asound_conf_audio_format: "S{{ asound_conf_sample_size }}_LE"
+
+asound_conf_hw_hifiberry: "hw:CARD=sndrpihifiberry,DEV=0"
+asound_conf_dmix_name: "hifiberry_dmix"
