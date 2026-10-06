@@ -35,9 +35,9 @@ pre made container for audio assistant but installed it from source.
 
 Base Roles:
 
-* asound_conf
-* python314 (required for musicassistant)
-* smb_mount
+* `asound_conf`
+* `python314` (required for musicassistant)
+* `smb_mount`
 
 Feature roles
 
