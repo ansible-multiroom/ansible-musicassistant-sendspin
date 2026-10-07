@@ -31,6 +31,7 @@
         src: /usr/src/Python-3.14.8.tar.xz
         dest: /usr/src/
         remote_src: true
+      ignore_errors: "{{ ansible_check_mode }}"
 
     - name: Configure, compile and install python 3.14
       ansible.builtin.shell: |
