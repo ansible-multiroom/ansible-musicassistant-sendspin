@@ -9,7 +9,7 @@ ansible_python_interpreter: /usr/bin/python
 
 # sendspin sinks are configured identically on all hosts
 sendspin_sinks:
-  - name: "navitest-out"
+  - name: "musitest-out"
     port: 8928
-    music_assistant_server_dns: "navitest.iselin.net"
+    music_assistant_server_dns: "musitest.iselin.net"
     device: "{{ sendspin_audio_sink }}"
