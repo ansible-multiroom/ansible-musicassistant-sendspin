@@ -6,3 +6,6 @@
   roles:
     - asound_conf
     - sendspin
+    #- smb_mount
+    - python314
+    #- musicassistant

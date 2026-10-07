@@ -1,0 +1,41 @@
+---
+
+- name: Check if python 3.14 installed
+  ansible.builtin.stat:
+    path: /opt/python314/bin/python3.14
+  register: python314_binary
+
+- name: Download and compile python 3.14
+  when: not python314_binary.stat.exists
+  block:
+    - name: install packages needed for compilation
+      ansible.builtin.apt:
+        name:
+          - build-essential
+          - libssl-dev
+          - libsqlite3-dev
+          - libffi-dev
+          - libreadline-dev
+          - zlib1g-dev
+          - xz-utils
+        state: present
+
+    - name: Download python 3.14 source
+      ansible.builtin.get_url:
+        url: "https://www.python.org/ftp/python/3.14.8/Python-3.14.8.tar.xz"
+        dest: /usr/src/Python-3.14.8.tar.xz
+        mode: '0644'
+
+    - name: unpack python 3.14 source
+      ansible.builtin.unarchive:
+        src: /usr/src/Python-3.14.8.tar.xz
+        dest: /usr/src/
+        remote_src: true
+
+    - name: Configure, compile and install python 3.14
+      ansible.builtin.shell: |
+        cd /usr/src/Python-3.14.8
+        make clean
+        ./configure --prefix=/opt/python314 --enable-optimizations
+        make -j$(nproc)
+        make altinstall
