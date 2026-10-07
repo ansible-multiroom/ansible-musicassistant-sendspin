@@ -1,0 +1,51 @@
+---
+
+- name: Get mount status 
+  ansible.builtin.set_fact:
+     music_share_mounted: "{{ ansible_facts['mounts'] | selectattr('mount', 'equalto', smb_mount_target_dir) | selectattr('fstype', 'equalto', 'smb3') | list | length > 0 }}"
+
+- name: Configure mount when not here already
+  when: not music_share_mounted
+  block: 
+    - name: Get share name
+      ansible.builtin.pause:
+        prompt: "Enter CIFS Sharename to be mounted to {{ smb_mount_target_dir }}"
+      register: sharename_input
+
+    - name: Get share username 
+      ansible.builtin.pause:
+        prompt: "Enter username for {{ sharename_input.user_input }}"
+      register: username_input
+
+    - name: Get share domain
+      ansible.builtin.pause:
+        prompt: "Enter domain for {{ username_input.user_input }}"
+      register: domain_input
+
+    - name: Get share password
+      ansible.builtin.pause:
+        prompt: "Enter password for {{ username_input.user_input }}"
+        echo: false
+      register: password_input
+
+    - name: Show inputs
+      ansible.builtin.debug:
+        msg: "About to mount {{ smb_mount_target_dir }} from {{ sharename_input.user_input}} with {{ domain_input.user_input }}/{{ username_input.user_input }} using {{ password_input.user_input }}"
+
+    - name: Create credentials file
+      ansible.builtin.copy:
+        dest: /etc/music_mount.creds
+        content: |
+          username={{ username_input.user_input }}
+          password={{ password_input.user_input }}
+          domain={{ domain_input.user_input }}
+      notify: remount music share
+
+    - name: Update /etc/fstab
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        regexp: "^{{ sharename_input.user_input }} "
+        line: "{{ sharename_input.user_input }} {{ smb_mount_target_dir }} smb3 defaults,ro,nosuid,nodev,noexec,soft,vers=3.0,credentials=/etc/music_mount.creds 0 0"
+        state: present
+        backup: yes
+      notify: remount music share
