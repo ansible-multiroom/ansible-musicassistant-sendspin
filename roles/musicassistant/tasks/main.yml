@@ -1,0 +1,107 @@
+---
+
+- name: Install install and system dependencies for music assistant
+  ansible.builtin.apt:
+    name:
+      #- python3-pip
+      #- python3-venv
+      #- python3-dev
+      - git
+      - ffmpeg
+    state: present
+
+- name: Create user for musicassistant
+  ansible.builtin.user:
+    name: musicassistant
+    system: true
+    groups: audio
+    shell: /usr/sbin/nologin
+
+- name: Create dirs for musicassistant
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: musicassistant
+    group: musicassistant
+    mode: '0755'
+  loop:
+    - /opt/musicassistant
+    - /var/lib/musicassistant
+    - /usr/src/musicassistant
+
+- name: clone Music Assistant locally
+  become: true
+  become_user: musicassistant
+  ansible.builtin.git:
+    repo: https://github.com/music-assistant/server.git
+    dest: /usr/src/musicassistant
+    version: stable
+    force: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  notify: Restart musicassistant
+
+- name: Prepare musicassistant pip environment
+  become: true
+  become_user: musicassistant
+  ansible.builtin.pip:
+    name: 
+      - pip
+      - setuptools
+      - wheel
+    state: latest
+    virtualenv: /opt/musicassistant
+    virtualenv_command: /opt/python314/bin/python3.14 -m venv
+  notify: Restart musicassistant
+
+- name: Install Music Assistant Dependencies
+  become: true
+  become_user: musicassistant
+  ansible.builtin.pip:
+    name: 
+      - "hass-client"
+      - "music-assistant-frontend"
+      - "uv"
+    virtualenv: /opt/musicassistant
+    virtualenv_command: /opt/python314/bin/python3.14 -m venv
+    extra_args: "--upgrade"
+  environment:
+    TMPDIR: "/var/tmp"
+    TEMP: "/var/tmp"
+    TMP: "/var/tmp"
+  notify: Restart musicassistant
+
+- name: Install Music Assistant
+  become: true
+  become_user: musicassistant
+  ansible.builtin.pip:
+    name: "/usr/src/musicassistant"
+    virtualenv: /opt/musicassistant
+    virtualenv_command: /opt/python314/bin/python3.14 -m venv
+    editable: true
+    #extra_args: "--no-deps"
+  register: musicassistant_pip
+  ignore_errors: "{{ ansible_check_mode }}"
+  environment:
+    TMPDIR: "/var/tmp"
+    TEMP: "/var/tmp"
+    TMP: "/var/tmp"
+  notify: Restart musicassistant
+
+- name: Create systemd service for Music Assistant
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/musicassistant.service
+    content: |
+      [Unit]
+      Description=Music Assistant Server
+      After=network.target
+      [Service]
+      Type=simple
+      User=musicassistant
+      Group=musicassistant
+      Environment="PATH=/opt/musicassistant/bin:/usr/local/bin:/usr/bin:/bin"
+      ExecStart=/opt/musicassistant/bin/python3 -m music_assistant --data-dir /var/lib/musicassistant
+      Restart=always
+      RestartSec=10
+      [Install]
+      WantedBy=multi-user.target
+  notify: Restart musicassistant

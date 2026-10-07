@@ -1,0 +1,10 @@
+---
+
+- name: Restart musicassistant
+  ansible.builtin.systemd:
+    name: musicassistant.service
+    daemon_reload: yes
+    state: restarted
+    masked: no
+    enabled: yes
+  ignore_errors: "{{ ansible_check_mode }}"
