@@ -8,4 +8,4 @@
     - sendspin
     - smb_mount
     - python314
-    #- musicassistant
+    - musicassistant
