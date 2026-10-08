@@ -1,11 +1,13 @@
 ---
 
-# generic settings
+### generic ansible settings
 
 warning_message: "WARNING: This file is managed with Ansible, see https://github.com/ansible-multiroom/ansible-musicassistant-sendspin"
 
 # to be removed when restarting with clean os again:
 ansible_python_interpreter: /usr/bin/python
+
+### application settings
 
 # sendspin sinks are configured identically on all hosts
 sendspin_sinks:

@@ -3,9 +3,19 @@
 - name: Configure sendspin and musicassistant
   hosts: all
   become: true
+  pre_tasks:
+    - name: Create shared ansible tmp dir
+      ansible.builtin.file:
+        path: /var/tmp/ansible-shared/tmp
+        state: directory
+        mode: '1777'
+        owner: root
+        group: root
+      check_mode: false
+
   roles:
     - asound_conf
     - sendspin
     - smb_mount
     - python314
-    #- musicassistant
+    - musicassistant

@@ -51,6 +51,7 @@
     state: latest
     virtualenv: /opt/musicassistant
     virtualenv_command: /opt/python314/bin/python3.14 -m venv
+  ignore_errors: "{{ ansible_check_mode }}"
   notify: Restart musicassistant
 
 - name: Install Music Assistant Dependencies
@@ -68,6 +69,7 @@
     TMPDIR: "/var/tmp"
     TEMP: "/var/tmp"
     TMP: "/var/tmp"
+  ignore_errors: "{{ ansible_check_mode }}"
   notify: Restart musicassistant
 
 - name: Install Music Assistant
