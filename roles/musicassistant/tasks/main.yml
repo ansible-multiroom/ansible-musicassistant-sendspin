@@ -3,9 +3,6 @@
 - name: Install install and system dependencies for music assistant
   ansible.builtin.apt:
     name:
-      #- python3-pip
-      #- python3-venv
-      #- python3-dev
       - git
       - ffmpeg
     state: present
