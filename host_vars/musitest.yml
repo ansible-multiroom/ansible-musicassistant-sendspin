@@ -1,0 +1,11 @@
+
+local_captures:
+  - name: blue_http
+    sourcetype: bluealsa
+    sinktype: http-stream
+    sinkid: 9999
+  - name: alsa_loop
+    sourcetype: alsa
+    sourceid: dsnoop:CARD=sndrpihifiberry,DEV=0
+    sinktype: alsa
+    sinkid: hifiberry_dmix

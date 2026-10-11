@@ -4,7 +4,7 @@
 
 warning_message: "WARNING: This file is managed with Ansible, see https://github.com/ansible-multiroom/ansible-musicassistant-sendspin"
 
-# to be removed when restarting with clean os again:
+# use installed python interpreter, suppress discovery warning
 ansible_python_interpreter: /usr/bin/python
 
 ### application settings

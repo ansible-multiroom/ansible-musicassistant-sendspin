@@ -1,0 +1,28 @@
+---
+
+- name: Install bluez-alsa-utils
+  ansible.builtin.apt:
+    name: bluez-alsa-utils
+    state: latest
+
+- name: Stop and disable default bluealsa-aplay
+  ansible.builtin.systemd:
+    name: bluealsa-aplay
+    state: stopped
+    enabled: false
+    masked: true
+
+- name: Create bluealsa override directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/bluealsa.service.d
+    state: directory
+    mode: '0755'
+
+- name: Force bluealsa to be sink only
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/bluealsa.service.d/override.conf
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=/usr/bin/bluealsa -p a2dp-sink --a2dp-force-audio-cd
+  notify: Restart bluealsa

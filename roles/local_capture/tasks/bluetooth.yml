@@ -1,0 +1,43 @@
+---
+
+- name: Adjust bluetooth config
+  ansible.builtin.ini_file:
+    dest: /etc/bluetooth/main.conf
+    section: General
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  loop:
+    - { option: "DiscoverableTimeout", value: "0" }
+    - { option: "PairableTimeout", value: "0" }
+    - { option: "JustWorksRepairing", value: "always" }
+    - { option: "Class", value: "0x000414" }
+  notify: Restart bluetoothd
+
+- name: Install bluez-tools and rfkill for bt-agent
+  ansible.builtin.apt:
+    name: 
+      - bluez-tools
+      - rfkill
+    state: present
+  notify: Restart bt-agent
+
+- name: Create systemd service for Auth Agent
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/bt-agent.service
+    content: |
+      [Unit]
+      Description=Bluetooth Auth Agent
+      After=bluetooth.service
+      Requires=bluetooth.service
+      [Service]
+      Type=simple
+      ExecStartPre=/usr/sbin/rfkill unblock bluetooth
+      ExecStart=/usr/bin/bt-agent --capability=NoInputNoOutput
+      ExecStartPost=/usr/bin/sh -c "until /usr/bin/bluetoothctl power on; do sleep 0.5; done; until /usr/bin/bluetoothctl discoverable on; do sleep 0.5; done"
+      KillSignal=SIGINT
+      TimeoutStopSec=3s
+      Restart=always
+      [Install]
+      WantedBy=multi-user.target
+  notify: Restart bt-agent
+
