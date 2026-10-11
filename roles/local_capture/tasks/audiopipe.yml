@@ -1,0 +1,64 @@
+---
+
+- name: Create capture settings files
+  ansible.builtin.copy:
+    dest: "/etc/default/capture_{{ item.name }}.conf"
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      SOURCETYPE="{{ item.sourcetype }}"
+      SOURCEID="{{ item.sourceid | default('') }}"
+      PIPE="{{pipe_prefix}}{{ item.name }}"
+      SINKTYPE="{{ item.sinktype }}"
+      SINKID="{{ item.sinkid }}"
+  loop: "{{ local_captures }}"
+  notify: Restart local capture
+
+- name: Have needed named pipes created by systemd
+  ansible.builtin.template:
+    src: etc/tmpfiles.d/local_capture_pipes.conf.j2
+    dest: /etc/tmpfiles.d/local_capture_pipes.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: 
+    - Apply systemd tmpfiles
+    - Restart local capture
+    - Restart local render
+
+- name: Create capture script
+  ansible.builtin.template:
+    src: usr/local/bin/audio_capture.j2
+    dest: /usr/local/bin/audio_capture
+    owner: root
+    group: root
+    mode: '0755'
+  notify: Restart local capture
+
+- name: Create generic capture service file
+  ansible.builtin.template:
+    src: etc/systemd/system/local-capture@.service.j2
+    dest: /etc/systemd/system/local-capture@.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart local capture
+
+- name: Create render script
+  ansible.builtin.template:
+    src: usr/local/bin/audio_render.j2
+    dest: /usr/local/bin/audio_render
+    owner: root
+    group: root
+    mode: '0755'
+  notify: Restart local render
+
+- name: Create generic render service file
+  ansible.builtin.template:
+    src: etc/systemd/system/local-render@.service.j2
+    dest: /etc/systemd/system/local-render@.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart local render

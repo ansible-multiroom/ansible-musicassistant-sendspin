@@ -1,0 +1,22 @@
+#!/usr/bin/bash
+#
+# {{ warning_message }}
+
+instance=$1
+
+conffile=/etc/default/capture_${instance}.conf
+echo "sourcing $conffile"
+. $conffile
+cat $conffile
+
+
+if [[ "$SOURCETYPE" == bluealsa ]]
+then
+  until [ $(/usr/bin/bluealsa-cli list-pcms | wc -l) -gt 0 ]
+  do
+    sleep 1
+  done
+  exec /usr/bin/arecord -D bluealsa -f cd -t raw --buffer-time=500000 "${PIPE}"
+else
+  exec /usr/bin/arecord -D "${SOURCEID}" -f cd -t raw --buffer-time=500000 "${PIPE}"
+fi

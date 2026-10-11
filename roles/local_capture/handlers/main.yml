@@ -1,0 +1,44 @@
+---
+
+- name: Restart bluetoothd
+  ansible.builtin.systemd:
+    name: "bluetooth.service"
+    daemon_reload: yes
+    state: restarted
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Restart bt-agent
+  ansible.builtin.systemd:
+    name: "bt-agent.service"
+    daemon_reload: yes
+    state: restarted
+    masked: no
+    enabled: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Restart bluealsa
+  ansible.builtin.systemd:
+    name: "bluealsa.service"
+    daemon_reload: yes
+    state: restarted
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Apply systemd tmpfiles
+  ansible.builtin.command: systemd-tmpfiles --create /etc/tmpfiles.d/local_capture_pipes.conf
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Restart local capture
+  ansible.builtin.systemd:
+    name: "local-capture@{{ item.name }}"
+    daemon_reload: yes
+    state: restarted
+  loop: "{{ local_captures }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Restart local render
+  ansible.builtin.systemd:
+    name: "local-render@{{ item.name }}"
+    daemon_reload: yes
+    state: restarted
+  loop: "{{ local_captures }}"
+  ignore_errors: "{{ ansible_check_mode }}"
