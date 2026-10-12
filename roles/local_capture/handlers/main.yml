@@ -32,6 +32,8 @@
     name: "local-capture@{{ item.name }}"
     daemon_reload: yes
     state: restarted
+    masked: no
+    enabled: yes
   loop: "{{ local_captures }}"
   ignore_errors: "{{ ansible_check_mode }}"
 
@@ -40,5 +42,7 @@
     name: "local-render@{{ item.name }}"
     daemon_reload: yes
     state: restarted
+    masked: no
+    enabled: yes
   loop: "{{ local_captures }}"
   ignore_errors: "{{ ansible_check_mode }}"
