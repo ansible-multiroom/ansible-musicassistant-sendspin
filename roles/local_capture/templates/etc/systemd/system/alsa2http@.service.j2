@@ -1,0 +1,14 @@
+# {{ warning_message }}
+
+[Unit]
+Description=Alsa to http audio copy
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/alsa2http %I
+Restart=always
+RestartSec=1s
+
+[Install]
+WantedBy=multi-user.target
