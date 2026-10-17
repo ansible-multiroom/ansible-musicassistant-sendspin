@@ -1,0 +1,28 @@
+#!/usr/bin/bash
+#
+# {{ warning_message }}
+
+instance=$1
+
+conffile=/etc/default/capture_${instance}.conf
+echo "sourcing $conffile"
+. $conffile
+cat $conffile
+
+logger -t "alsa2http" -p local3.err "starting ffmpeg"
+/usr/bin/ffmpeg \
+  -nostdin \
+  -hide_banner \
+  -nostats \
+  -loglevel warning \
+  -fflags nobuffer+flush_packets \
+  -flags low_delay \
+  -thread_queue_size 2048 \
+  -f alsa -channels 2 -sample_rate 44100 -i ${A2H_SOURCE} \
+  -c:a flac -frame_size 512 -compression_level 0 \
+  -headers "Content-Type: audio/ogg" \
+  -f ogg \
+  -listen 1 \
+  http://{{ ansible_facts["default_ipv4"]["address"] }}:${A2H_SINK}/
+logger -t "alsa2http" -p local3.err "ended ffmpeg"
+

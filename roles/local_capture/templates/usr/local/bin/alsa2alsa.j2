@@ -1,0 +1,21 @@
+#!/usr/bin/bash
+#
+# {{ warning_message }}
+
+instance=$1
+
+conffile=/etc/default/capture_${instance}.conf
+echo "sourcing $conffile"
+. $conffile
+cat $conffile
+
+if [[ "$A2A_SOURCE" == bluealsa ]]
+then
+  logger -t "alsa2alsa" -p local3.err "starting bluealsa-aplay"
+  /usr/bin/bluealsa-aplay -S -D "$A2A_SINK" --profile-a2dp 00:00:00:00:00:00 --loglevel=info
+  logger -t "alsa2alsa" -p local3.err "bluealsa-aplay terminated"
+else
+  logger -t "alsa2alsa" -p local3.err "starting arecord/aplay pipe"
+  /usr/bin/arecord -D "${A2A_SOURCE}" -f cd -t raw | aplay -f cd -t raw -D "${A2A_SINK}"
+  logger -t "alsa2alsa" -p local3.err "arecord/aplay pipe terminated"
+fi

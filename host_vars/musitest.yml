@@ -1,11 +1,24 @@
 
 local_captures:
-  - name: blue_http
-    sourcetype: bluealsa
-    sinktype: http-stream
-    sinkid: 9999
-  - name: alsa_loop
-    sourcetype: alsa
-    sourceid: dsnoop:CARD=sndrpihifiberry,DEV=0
-    sinktype: alsa
-    sinkid: hifiberry_dmix
+  - name: blue2http9999
+    a2a: 
+      source: bluealsa
+      sink: dmix:CARD=Loopback,DEV=0,SUBDEV=0
+    a2h:
+      source: dsnoop:CARD=Loopback,DEV=1,SUBDEV=0
+      sink: 9999
+  - name: localloop
+    a2a: 
+      source: dsnoop:CARD=sndrpihifiberry,DEV=0
+      sink: hifiberry_dmix
+
+##  Example for alsa to http (without bluetooth)
+##  - name: alsa2http
+##    a2h: 
+##      source: dsnoop:CARD=sndrpihifiberry,DEV=0
+##      sink: hifiberry_dmix
+## Example for bluealsa to alsa out (without Loopback)
+##  - name: blue2alsa
+##    a2h: 
+##      source: bluealsa
+##      sink: hifiberry_dmix

@@ -1,0 +1,18 @@
+# {{ warning_message }}
+
+[Unit]
+Description=Alsa to Alsa audio copy
+{% if local_captures | selectattr('a2a.source', 'defined') | selectattr('a2a.source', 'equalto', 'bluealsa') | list | length > 0 %}
+After=bluealsa.service
+Requires=bluealsa.service
+{% endif %}
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/alsa2alsa %I
+Restart=always
+RestartSec=1s
+
+[Install]
+WantedBy=multi-user.target

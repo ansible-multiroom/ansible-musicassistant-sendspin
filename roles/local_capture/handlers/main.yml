@@ -23,13 +23,9 @@
     state: restarted
   ignore_errors: "{{ ansible_check_mode }}"
 
-- name: Apply systemd tmpfiles
-  ansible.builtin.command: systemd-tmpfiles --create /etc/tmpfiles.d/local_capture_pipes.conf
-  ignore_errors: "{{ ansible_check_mode }}"
-
-- name: Restart local capture
+- name: Restart alsa2alsa
   ansible.builtin.systemd:
-    name: "local-capture@{{ item.name }}"
+    name: "alsa2alsa@{{ item.name }}"
     daemon_reload: yes
     state: restarted
     masked: no
@@ -37,12 +33,13 @@
   loop: "{{ local_captures }}"
   ignore_errors: "{{ ansible_check_mode }}"
 
-- name: Restart local render
+- name: Restart alsa2http
   ansible.builtin.systemd:
-    name: "local-render@{{ item.name }}"
+    name: "alsa2http@{{ item.name }}"
     daemon_reload: yes
     state: restarted
     masked: no
     enabled: yes
   loop: "{{ local_captures }}"
+  when: item.a2h is defined
   ignore_errors: "{{ ansible_check_mode }}"

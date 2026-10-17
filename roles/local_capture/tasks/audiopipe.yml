@@ -7,58 +7,64 @@
     group: root
     mode: "0644"
     content: |
-      SOURCETYPE="{{ item.sourcetype }}"
-      SOURCEID="{{ item.sourceid | default('') }}"
-      PIPE="{{pipe_prefix}}{{ item.name }}"
-      SINKTYPE="{{ item.sinktype }}"
-      SINKID="{{ item.sinkid }}"
+      {% if item.a2a is defined and item.a2a.source is defined %}
+      A2A_SOURCE="{{ item.a2a.source }}"
+      {% endif %}
+      {% if item.a2a is defined and item.a2a.sink is defined %}
+      A2A_SINK="{{ item.a2a.sink }}"
+      {% endif %}
+      {% if item.a2h is defined and item.a2h.source is defined %}
+      A2H_SOURCE="{{ item.a2h.source }}"
+      {% endif %}
+      {% if item.a2h is defined and item.a2h.sink is defined %}
+      A2H_SINK="{{ item.a2h.sink }}"
+      {% endif %}
   loop: "{{ local_captures }}"
-  notify: Restart local capture
-
-- name: Have needed named pipes created by systemd
-  ansible.builtin.template:
-    src: etc/tmpfiles.d/local_capture_pipes.conf.j2
-    dest: /etc/tmpfiles.d/local_capture_pipes.conf
-    owner: root
-    group: root
-    mode: '0644'
   notify: 
-    - Apply systemd tmpfiles
-    - Restart local capture
-    - Restart local render
+    - Restart alsa2alsa
+    - Restart alsa2http
 
-- name: Create capture script
+- name: Create alsa2alsa script
   ansible.builtin.template:
-    src: usr/local/bin/audio_capture.j2
-    dest: /usr/local/bin/audio_capture
+    src: usr/local/bin/alsa2alsa.j2
+    dest: /usr/local/bin/alsa2alsa
     owner: root
     group: root
     mode: '0755'
-  notify: Restart local capture
+  notify: Restart alsa2alsa
 
-- name: Create generic capture service file
+- name: Create alsa2http script
   ansible.builtin.template:
-    src: etc/systemd/system/local-capture@.service.j2
-    dest: /etc/systemd/system/local-capture@.service
-    owner: root
-    group: root
-    mode: '0644'
-  notify: Restart local capture
-
-- name: Create render script
-  ansible.builtin.template:
-    src: usr/local/bin/audio_render.j2
-    dest: /usr/local/bin/audio_render
+    src: usr/local/bin/alsa2http.j2
+    dest: /usr/local/bin/alsa2http
     owner: root
     group: root
     mode: '0755'
-  notify: Restart local render
+  notify: Restart alsa2http
 
-- name: Create generic render service file
+- name: Create generic alsa2alsa service file
   ansible.builtin.template:
-    src: etc/systemd/system/local-render@.service.j2
-    dest: /etc/systemd/system/local-render@.service
+    src: etc/systemd/system/alsa2alsa@.service.j2
+    dest: /etc/systemd/system/alsa2alsa@.service
     owner: root
     group: root
     mode: '0644'
-  notify: Restart local render
+  notify: Restart alsa2alsa
+
+- name: Create alsa2http services
+  when: local_captures | selectattr('a2h', 'defined') | list | length > 0
+  block:
+    - name: Load snd_aloop permanently
+      community.general.modprobe:
+        name: snd_aloop
+        state: present
+        persistent: present
+
+    - name: Create generic alsa2http service file
+      ansible.builtin.template:
+        src: etc/systemd/system/alsa2http@.service.j2
+        dest: /etc/systemd/system/alsa2http@.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart alsa2http
