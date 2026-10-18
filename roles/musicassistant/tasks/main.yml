@@ -35,6 +35,7 @@
     version: stable
     force: true
   ignore_errors: "{{ ansible_check_mode }}"
+  register: musicassistant_git
   notify: Restart musicassistant
 
 - name: Prepare musicassistant pip environment
@@ -45,46 +46,48 @@
       - pip
       - setuptools
       - wheel
-    state: latest
+      - uv
+    state: present
     virtualenv: /opt/musicassistant
     virtualenv_command: /opt/python314/bin/python3.14 -m venv
   ignore_errors: "{{ ansible_check_mode }}"
   notify: Restart musicassistant
 
-- name: Install Music Assistant Dependencies
-  become: true
-  become_user: musicassistant
-  ansible.builtin.pip:
-    name: 
-      - "hass-client"
-      - "music-assistant-frontend"
-      - "uv"
-    virtualenv: /opt/musicassistant
-    virtualenv_command: /opt/python314/bin/python3.14 -m venv
-    extra_args: "--upgrade"
-  environment:
-    TMPDIR: "/var/tmp"
-    TEMP: "/var/tmp"
-    TMP: "/var/tmp"
-  ignore_errors: "{{ ansible_check_mode }}"
-  notify: Restart musicassistant
+- name: Reinstall musicassistant if git changed
+  when: musicassistant_git.changed
+  block:
 
-- name: Install Music Assistant
-  become: true
-  become_user: musicassistant
-  ansible.builtin.pip:
-    name: "/usr/src/musicassistant"
-    virtualenv: /opt/musicassistant
-    virtualenv_command: /opt/python314/bin/python3.14 -m venv
-    editable: true
-    #extra_args: "--no-deps"
-  register: musicassistant_pip
-  ignore_errors: "{{ ansible_check_mode }}"
-  environment:
-    TMPDIR: "/var/tmp"
-    TEMP: "/var/tmp"
-    TMP: "/var/tmp"
-  notify: Restart musicassistant
+    - name: Install Music Assistant Dependencies
+      become: true
+      become_user: musicassistant
+      ansible.builtin.pip:
+        name: 
+          - "hass-client"
+          - "music-assistant-frontend"
+        executable: /opt/musicassistant/bin/pip
+        extra_args: "--upgrade"
+      environment:
+        TMPDIR: "/var/tmp"
+        TEMP: "/var/tmp"
+        TMP: "/var/tmp"
+      ignore_errors: "{{ ansible_check_mode }}"
+      notify: Restart musicassistant
+    
+    - name: Install Music Assistant
+      become: true
+      become_user: musicassistant
+      ansible.builtin.pip:
+        name: "/usr/src/musicassistant"
+        editable: true
+        executable: /opt/musicassistant/bin/pip
+        extra_args: "--force-reinstall"
+      register: musicassistant_pip
+      ignore_errors: "{{ ansible_check_mode }}"
+      environment:
+        TMPDIR: "/var/tmp"
+        TEMP: "/var/tmp"
+        TMP: "/var/tmp"
+      notify: Restart musicassistant
 
 - name: Create systemd service for Music Assistant
   ansible.builtin.copy:

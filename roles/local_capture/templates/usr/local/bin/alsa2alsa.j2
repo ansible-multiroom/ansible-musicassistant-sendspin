@@ -12,7 +12,7 @@ cat $conffile
 if [[ "$A2A_SOURCE" == bluealsa ]]
 then
   logger -t "alsa2alsa" -p local3.err "starting bluealsa-aplay"
-  /usr/bin/bluealsa-aplay -S -D "$A2A_SINK" --profile-a2dp 00:00:00:00:00:00 --loglevel=info
+  /usr/bin/bluealsa-aplay -S -D "$A2A_SINK" --profile-a2dp 00:00:00:00:00:00 --loglevel=info --pcm-buffer-time=50000 --pcm-period-time=10000
   logger -t "alsa2alsa" -p local3.err "bluealsa-aplay terminated"
 else
   logger -t "alsa2alsa" -p local3.err "starting arecord/aplay pipe"
