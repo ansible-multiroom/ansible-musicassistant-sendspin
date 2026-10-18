@@ -9,10 +9,10 @@ the same feature set but with modern tools
 * [musicassistant](https://www.music-assistant.io/) as core component to select the music that is played
 * [sendspin](https://www.sendspin-audio.com/) for synchronous multiroom audio
 
-## Old Implementation and Feature Set  
+## Old Implementation and Feature Set
 
 As **hardware**, I use **raspberrry pis** and **[hifiberry](https://www.hifiberry.com/) audio HATs** that are connected
-either to classic HiFi-equipment with an amp and decent loudspeakers or directly to a pair of loudspeakers when the HAT 
+either to classic HiFi-equipment with an amp and decent loudspeakers or directly to a pair of loudspeakers when the HAT
 has a built in amp.
 
 As **software**, I used [mpd](https://www.musicpd.org/) to select the music to play (I have collection of about 100K MP3 and
@@ -28,27 +28,24 @@ was not able to deal with a collection of more than 100K audio files and playlis
 
 ## New Implementation (wip)
 
-Too keep the memory footprint as small as possible (most of my Raspberry Pis have only 2GB of RAM), I did not use the 
-pre made container for audio assistant but installed it from source. 
+Too keep the memory footprint as small as possible (most of my Raspberry Pis have only 2GB of RAM), I did not use the
+pre made container for audio assistant but installed it from source.
 
 ### Ansible Roles
 
-For sendspin: 
+For sendspin:
 
-* `asound_conf`: Configures 
+* `asound_conf`: Configures
    * a default data rate for `dsnoop` and `dmix` devices
    * a simple alias name for the dmix device of the hifiberry audio card. This is because
-     sendspin is unable to parse an alsa device string 
+     sendspin is unable to parse an alsa device string
      like `dmix:CARD=sndrpihifiberry,DEV=0` (containing `:`, `=` and `,` characters)
 * `sendspin`: Configures as many sendspin audio sinks as defined in the `sendspin_sinks` list of dicts.
-
-WIP 
-
-* `python314` (required for musicassistant)
-* `smb_mount`
+* `python314`: required for musicassistant
+* `smb_mount`: mount remote audio library read only
 * `musicassistant`
-
-Planned, but roles not defined yet:
-
-* support for audio capture (probably a special sendspin configuration
-* support for bluetooth sources (probably a combination of bluez-alsa and sendspin)
+* `local_capture`
+    * capture audio from bluetooth or a local sound card
+    * render it
+       * either to a http flac stream (so it can be fetched by musicassistant from an url)
+       * or to a local soundcard (so you can play it with minimal latency)
