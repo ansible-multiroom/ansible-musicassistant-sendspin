@@ -1,0 +1,23 @@
+---
+
+- name: create sendspin config files
+  ansible.builtin.template:
+    src: sendspin.config.j2
+    dest: "{{ sendspin_config_dir }}/{{ item.name }}"
+    owner: sendspin
+    group: sendspin
+    mode: '0644'
+  when: item.s2a is defined or item.a2s is defined
+  loop: "{{ plumbings }}"
+  notify: Restart sendspin services
+
+- name: create sendspin state dirs
+  ansible.builtin.file:
+    state: directory
+    name: "{{ sendspin_state_dir }}/{{ item.name }}"
+    owner: sendspin
+    group: sendspin
+    mode: '0755'
+  when: item.s2a is defined or item.a2s is defined
+  loop: "{{ plumbings }}"
+  notify: Restart sendspin services

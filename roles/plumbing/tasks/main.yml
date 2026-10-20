@@ -1,0 +1,39 @@
+---
+
+- name: Skip role if no plumbing defined
+  when: plumbings is not defined or plumbings | length == 0
+  block:
+    - name: Skip plumbing role
+      ansible.builtin.debug:
+        msg: "'plumbings' is not defined or empty"
+
+    - name: End role
+      ansible.builtin.meta: end_role
+
+- name: Install sendspin binary when at least one s2a or a2s
+  when: ( plumbings | selectattr('s2a', 'defined') | list | length > 0 or 
+          plumbings | selectattr('a2s', 'defined') | list | length > 0 )
+  ansible.builtin.include_tasks: install_sendspin.yml
+
+- name: Install snd_aloop module when there are connections with more than one audio component
+  when: plumbings | map('length') | select('greaterthan', 2) | list | length > 0
+  ansible.builtin.include_tasks: install_snd_aloop.yml
+
+- name: Configure bluetooth and bluealsa
+  when: plumbings | selectattr('a2a.source', 'defined') | selectattr('a2a.source', 'equalto', 'bluealsa') | list | length > 0
+  block:
+    - name: Configure bluetooth daemon
+      ansible.builtin.include_tasks: bluetooth.yml
+
+    - name: Configure bluealsa
+      ansible.builtin.include_tasks: bluealsa.yml
+
+- name: Install and configure audio pipes (a2a, a2h)
+  when: ( plumbings | selectattr('a2a', 'defined') | list | length > 0 or 
+          plumbings | selectattr('a2h', 'defined') | list | length > 0 )
+  ansible.builtin.include_tasks: configure_audio_pipes.yml
+
+- name: Configure sendspin clients (s2a, a2s)
+  when: ( plumbings | selectattr('s2a', 'defined') | list | length > 0 or 
+          plumbings | selectattr('a2s', 'defined') | list | length > 0 )
+  ansible.builtin.include_tasks: configure_sendspin.yml

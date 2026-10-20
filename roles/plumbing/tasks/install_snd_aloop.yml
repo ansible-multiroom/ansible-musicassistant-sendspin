@@ -1,0 +1,7 @@
+---
+
+- name: Load snd_aloop permanently
+  community.general.modprobe:
+    name: snd_aloop
+    state: present
+    persistent: present

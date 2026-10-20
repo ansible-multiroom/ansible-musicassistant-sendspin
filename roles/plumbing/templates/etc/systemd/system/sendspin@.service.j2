@@ -1,0 +1,15 @@
+# {{ warning_message }}
+[Unit]
+Description=Sendspin Client Daemon Instance %I
+After=network.target
+
+[Service]
+Type=simple
+User=sendspin
+Group=audio
+ExecStart=/usr/local/bin/sendspin-cli --config /etc/sendspin/%I
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target
