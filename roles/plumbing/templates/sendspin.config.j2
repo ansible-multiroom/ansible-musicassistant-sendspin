@@ -1,0 +1,28 @@
+# {{ warning_message }}
+{% if item.s2a is not defined and item.a2s is not defined %}
+{{ FAIL_VARIABLE_DOES_NOT_EXIST }}
+{% endif %}
+
+{% if item.s2a is defined %}
+output = {{ item.s2a.sink }}
+name = {{ item.s2a.sendspin_ma_name }}
+server = {{ item.s2a.sendspin_ma_url }}
+pidfile = {{ sendspin_socket_dir }}/{{ item.name }}.pid
+log-level = warn
+port = {{ item.s2a.sendspin_own_port }}
+audio-format = flac:44100:16:2
+allow-unpaired = true
+control-socket = {{ sendspin_socket_dir }}/{{ item.name }}.socket
+state-dir = {{ sendspin_state_dir }}/{{ item.name }}
+{% else %}
+input = {{ item.a2s.source }}
+name = {{ item.a2s.sendspin_ma_name }}
+server = {{ item.a2s.sendspin_ma_url }}
+pidfile = {{ sendspin_socket_dir }}/{{ item.name }}.pid
+log-level = warn
+port = {{ item.a2s.sendspin_own_port }}
+audio-format = flac:44100:16:2
+allow-unpaired = true
+control-socket = {{ sendspin_socket_dir }}/{{ item.name }}.socket
+state-dir = {{ sendspin_state_dir }}/{{ item.name }}
+{% endif %}

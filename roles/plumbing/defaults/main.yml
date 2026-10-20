@@ -1,0 +1,9 @@
+---
+
+plumbings: []
+
+sendspin_version: "0.4.0"
+
+sendspin_config_dir: "/etc/sendspin"
+sendspin_state_dir: "/var/lib/sendspin_states"
+sendspin_socket_dir: "/var/lib/sendspin_sockets"

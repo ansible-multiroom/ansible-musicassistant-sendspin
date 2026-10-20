@@ -1,24 +1,27 @@
 
-local_captures:
-  - name: blue2http9999
-    a2a: 
+plumbings:
+  - name: loudspeaker_of_musitest
+    s2a:
+      sendspin_own_port: 8930
+      sendspin_ma_url: "ws://musitest.iselin.net:8927/sendspin"
+      sendspin_ma_name: "{{ ansible_facts['hostname'] }}"
+      sink: "dmix:CARD=sndrpihifiberry,DEV=0"
+  - name: linein_of_musitest
+    a2s:
+      source: "dsnoop:CARD=sndrpihifiberry,DEV=0"
+      sendspin_own_port: 8940
+      sendspin_ma_url: "ws://musitest.iselin.net:8927/sendspin"
+      sendspin_ma_name: "linein_{{ ansible_facts['hostname'] }}"
+  - name: bluealsa_of_musitest
+    a2a:
       source: bluealsa
       sink: dmix:CARD=Loopback,DEV=0,SUBDEV=0
-    a2h:
+    a2s:
       source: dsnoop:CARD=Loopback,DEV=1,SUBDEV=0
-      sink: 9999
-  - name: localloop
-    a2a: 
+      sendspin_own_port: 8941
+      sendspin_ma_url: "ws://musitest.iselin.net:8927/sendspin"
+      sendspin_ma_name: "bluetooth_{{ ansible_facts['hostname'] }}"
+  - name: line2http8950
+    a2h:
       source: dsnoop:CARD=sndrpihifiberry,DEV=0
-      sink: hifiberry_dmix
-
-##  Example for alsa to http (without bluetooth)
-##  - name: alsa2http
-##    a2h: 
-##      source: dsnoop:CARD=sndrpihifiberry,DEV=0
-##      sink: hifiberry_dmix
-## Example for bluealsa to alsa out (without Loopback)
-##  - name: blue2alsa
-##    a2h: 
-##      source: bluealsa
-##      sink: hifiberry_dmix
+      http_port: 8950

@@ -1,6 +1,6 @@
 ---
 
-- name: Install install and system dependencies for music assistant
+- name: Install system dependencies for music assistant
   ansible.builtin.apt:
     name:
       - git

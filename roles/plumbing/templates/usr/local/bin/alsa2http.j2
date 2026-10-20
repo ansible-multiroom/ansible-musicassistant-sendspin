@@ -4,7 +4,7 @@
 
 instance=$1
 
-conffile=/etc/default/capture_${instance}.conf
+conffile=/etc/default/audiopipe_${instance}.conf
 echo "sourcing $conffile"
 . $conffile
 cat $conffile
@@ -26,6 +26,6 @@ logger -t "alsa2http" -p local3.err "starting ffmpeg"
   -listen 1 \
   -timeout -1 \
   -tcp_nodelay 1 \
-  http://{{ ansible_facts["default_ipv4"]["address"] }}:${A2H_SINK}/
+  http://{{ ansible_facts["default_ipv4"]["address"] }}:${A2H_HTTP_PORT}/
 logger -t "alsa2http" -p local3.err "ended ffmpeg"
 

@@ -6,12 +6,3 @@ warning_message: "WARNING: This file is managed with Ansible, see https://github
 
 # use installed python interpreter, suppress discovery warning
 ansible_python_interpreter: /usr/bin/python
-
-### application settings
-
-# sendspin sinks are configured identically on all hosts
-sendspin_sinks:
-  - name: "musitest-out"
-    port: 8928
-    music_assistant_server_dns: "musitest.iselin.net"
-    device: "{{ sendspin_audio_sink }}"
