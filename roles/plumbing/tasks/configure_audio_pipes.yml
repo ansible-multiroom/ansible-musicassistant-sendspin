@@ -7,6 +7,7 @@
     group: root
     mode: "0644"
     content: |
+      # {{ warning_message }}
       {% if item.a2a is defined and item.a2a.source is defined %}
       A2A_SOURCE="{{ item.a2a.source }}"
       {% endif %}
