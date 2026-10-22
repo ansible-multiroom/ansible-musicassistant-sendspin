@@ -3,9 +3,11 @@
 - name: Install sendspin missing dependencies
   ansible.builtin.apt:
     name:
+      - libpulse0
       - libportaudio2
       - libavahi-compat-libdnssd1
       - libpipewire-0.3-0t64
+  notify: Restart sendspin services
 
 - name: Install sendspin binary version {{ sendspin_version }}
   ansible.builtin.unarchive:
