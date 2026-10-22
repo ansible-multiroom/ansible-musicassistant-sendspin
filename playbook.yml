@@ -1,6 +1,6 @@
 ---
 
-- name: Configure sendspin and musicassistant
+- name: Configure ansible tmp dir
   hosts: all
   become: true
   pre_tasks:
@@ -13,9 +13,17 @@
         group: root
       check_mode: false
 
+- name: Configure musicassistant
+  hosts: musicassistants
+  become: true
   roles:
-    - asound_conf
     - smb_mount
     - python314
     - musicassistant
+
+- name: Configure plumbing
+  hosts: plumbed
+  become: true
+  roles:
+    - asound_conf
     - plumbing
