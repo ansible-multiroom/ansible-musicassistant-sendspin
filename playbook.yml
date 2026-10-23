@@ -20,6 +20,7 @@
     - smb_mount
     - python314
     - musicassistant
+  tags: musicassistant
 
 - name: Configure plumbing
   hosts: plumbed
@@ -27,3 +28,4 @@
   roles:
     - asound_conf
     - plumbing
+  tags: plumbing

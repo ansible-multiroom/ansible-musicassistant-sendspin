@@ -1,0 +1,19 @@
+#!/usr/bin/bash
+
+# {{ warning_message }}
+
+cat /proc/asound/cards | grep "\[" | egrep "{{ test_cards | join ("|")}}" | while read line
+do
+  number=$( echo $line | awk ' { print $1 } ')
+  card=$(   echo $line | awk ' { print $2 } ' | tr -d "[]:")
+  ls -1 /proc/asound/card${number}/*/*/hw_params | while read filename
+  do
+    if [[ $( cat $filename ) != 'closed' ]]
+    then
+      format=$( echo $( cat $filename | egrep "^format|^channels|^rate" | awk '{ print $2 }' ))
+      format=$( echo $format | tr " " "/" )
+      echo "$filename $format $card"
+    fi
+  done
+done
+
