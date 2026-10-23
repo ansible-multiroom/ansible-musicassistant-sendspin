@@ -29,3 +29,10 @@
     - asound_conf
     - plumbing
   tags: plumbing
+
+- name: Install maclient
+  hosts: musicassistants
+  become: true
+  roles:
+    - maclient
+  tags: maclient

@@ -1,0 +1,31 @@
+---
+
+- name: Create user for maclient
+  ansible.builtin.user:
+    name: maclient
+    system: true
+    groups: audio
+    shell: /usr/sbin/nologin
+
+- name: Create dir for maclient
+  ansible.builtin.file:
+    path: /opt/maclient
+    state: directory
+    owner: maclient
+    group: maclient
+    mode: '0755'
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Create virtenv for maclient
+  become: true
+  become_user: maclient
+  ansible.builtin.pip:
+    name: 
+      - pip
+      - aiohttp
+      - music-assistant-client
+    state: present
+    virtualenv: /opt/maclient
+    virtualenv_command: /opt/python314/bin/python3.14 -m venv
+  ignore_errors: "{{ ansible_check_mode }}"
+
