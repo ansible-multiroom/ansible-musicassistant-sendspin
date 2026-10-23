@@ -10,6 +10,9 @@
     - name: End role
       ansible.builtin.meta: end_role
 
+- name: Install alsatest script
+  ansible.builtin.include_tasks: install_alsatest.yml
+
 - name: Install sendspin binary when at least one s2a or a2s
   when: ( plumbings | selectattr('s2a', 'defined') | list | length > 0 or 
           plumbings | selectattr('a2s', 'defined') | list | length > 0 )
