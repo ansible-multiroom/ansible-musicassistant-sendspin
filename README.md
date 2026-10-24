@@ -44,7 +44,7 @@ For more details, please check the README files in the respective role directori
 
 ### Ansible Tags and Host Groups
 
-Used in the [inventory](inventory) and [playbook](playbook.yml)
+This describes the settings and configuration used for the [testamsel](environments/testamsel) environment. You should be able to use the [playbook](environments/testamsel/playbook.yml) and the [group_vars](environments/testamsel/group_vars/all.yml) unchanged and adjust the [inventory](environments/testamsel/inventory) only.
 
 Tags:
 * `musicassistant`: Roles needed to run the music assistant server
@@ -74,7 +74,8 @@ Configure the `plumbing` variable for each host according to your needs in the `
 Run the playbook first in check mode to verify that your inventory and vars make sense:
 
 ~~~
-ansible-playbook -i inventory -CD playbook.yml -u pi
+cd environments/testamsel
+ANSIBLE_CONFIG=../../ansible.cfg ansible-playbook -CD -i inventory playbook.yml -u pi
 ~~~
 
 You can use `--tags` to select only some roles and/or `--limit` to select only some target hosts. 
