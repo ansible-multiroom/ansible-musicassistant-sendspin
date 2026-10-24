@@ -29,3 +29,20 @@
     virtualenv_command: /opt/python314/bin/python3.14 -m venv
   ignore_errors: "{{ ansible_check_mode }}"
 
+- name: Create import_m3u_playlist.py script
+  ansible.builtin.template:
+    src: usr/local/bin/import_m3u_playlist.py.j2
+    dest: /usr/local/bin/import_m3u_playlist.py
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create dummy access token file if not here yet
+  ansible.builtin.copy:
+    dest: /usr/local/bin/ma_access_token
+    owner: root
+    group: root
+    mode: '0644'
+    force: no
+    content: |
+      <put here your musicassistant access token on one single line>

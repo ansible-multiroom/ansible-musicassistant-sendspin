@@ -26,26 +26,61 @@ As most native mpd clients had one or the other bug or were not in active develo
 mpd ([ampd](https://github.com/rain0r/ampd), [rompr](https://fatg3erman.github.io/RompR/)) with mixed success. Especially rompr
 was not able to deal with a collection of more than 100K audio files and playlists with 1000 songs or more.
 
-## New Implementation (wip)
+## New Implementation
 
-Too keep the memory footprint as small as possible (most of my Raspberry Pis have only 2GB of RAM), I did not use the
-pre made container for audio assistant but installed it from source.
+Too keep the memory footprint as small as possible (most of my Raspberry Pis have only 2GB of RAM), I don't use the
+pre made container for audio assistant but install it from source.
 
 ### Ansible Roles
 
-For sendspin:
+* [`asound_conf`](roles/asound_conf/README.md): Configures a default data rate for `dsnoop` and `dmix` devices
+* [`python314`](roles/python314/README.md): required for musicassistant
+* [`smb_mount`](roles/smb_mount/README.md): mount remote audio library read only, useful for musicassistant
+* [`musicassistant`](roles/musicassistant/README.md): Downloads and install the current version of music assistant server from github
+* [`plumbing`](roles/plumbing/README.md): Builds up all audio sources and sinks in your house to build the multiroom system
+* [`maclient`](roles/maclient/README.md): Installs a venv with the music assistant client library and a demo tool to migrate mpd playlists to musicassistant
 
-* `asound_conf`: Configures
-   * a default data rate for `dsnoop` and `dmix` devices
-   * a simple alias name for the dmix device of the hifiberry audio card. This is because
-     sendspin is unable to parse an alsa device string
-     like `dmix:CARD=sndrpihifiberry,DEV=0` (containing `:`, `=` and `,` characters)
-* `sendspin`: Configures as many sendspin audio sinks as defined in the `sendspin_sinks` list of dicts.
-* `python314`: required for musicassistant
-* `smb_mount`: mount remote audio library read only
-* `musicassistant`
-* `local_capture`
-    * capture audio from bluetooth or a local sound card
-    * render it
-       * either to a http flac stream (so it can be fetched by musicassistant from an url)
-       * or to a local soundcard (so you can play it with minimal latency)
+For more details, please check the README files in the respective role directories
+
+### Ansible Tags and Host Groups
+
+Used in the [inventory](inventory) and [playbook](playbook.yml)
+
+Tags:
+* `musicassistant`: Roles needed to run the music assistant server
+* `plumbing`: Roles needed to make plumbing work
+* `maclient`: Roles to install the music assistant client library
+
+Host groups:
+* `musicassistants`: Host(s) where the music assistant server (and, if wanted, music assistant client) should be installed
+* `plumbed`: Hosts(s) where any physical audio source or sink is required
+
+## Install it
+
+### Preconditions
+
+All your target pis are running at least debian trixie and are reachable in the network, preferrably via a hostname (and not only via an IP address).
+
+You can ssh into them without password (either as user `pi` and `pi` can become root without password, or directly as `root`).
+
+### Configure it
+
+Populate your `inventory`, put (at least) one host into the `[musicassistants]` group, put at least one host into the [`plumbed`] group. Usually, your server host is in both groups.
+
+Configure the `plumbing` variable for each host according to your needs in the `host_vars` directory.
+
+### Test it
+
+Run the playbook first in check mode to verify that your inventory and vars make sense:
+
+~~~
+ansible-playbook -i inventory -CD playbook.yml -u pi
+~~~
+
+You can use `--tags` to select only some roles and/or `--limit` to select only some target hosts. 
+
+### Do it
+
+Finally, remove the "C" from the `ansible-playbook` command to really apply the changes.
+
+
