@@ -1,0 +1,7 @@
+plumbings:
+  - name: loudspeaker_from_wohnen
+    s2a:
+      sendspin_own_port: 8930
+      sendspin_ma_url: "ws://wohnen.iselin.net:8927/sendspin"
+      sendspin_ma_name: "{{ ansible_facts['hostname'] }}"
+      sink: "dmix:CARD=sndrpihifiberry,DEV=0"

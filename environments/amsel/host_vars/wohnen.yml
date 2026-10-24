@@ -1,0 +1,22 @@
+plumbings:
+  - name: loudspeaker_from_wohnen
+    s2a:
+      sendspin_own_port: 8930
+      sendspin_ma_url: "ws://wohnen.iselin.net:8927/sendspin"
+      sendspin_ma_name: "{{ ansible_facts['hostname'] }}"
+      sink: "dmix:CARD=sndrpihifiberry,DEV=0"
+  - name: linein_to_wohnen
+    a2s:
+      source: "dsnoop:CARD=sndrpihifiberry,DEV=0"
+      sendspin_own_port: 8940
+      sendspin_ma_url: "ws://wohnen.iselin.net:8927/sendspin"
+      sendspin_ma_name: "linein_{{ ansible_facts['hostname'] }}"
+  - name: bluealsa_to_wohnen
+    a2a:
+      source: bluealsa
+      sink: dmix:CARD=Loopback,DEV=0,SUBDEV=0
+    a2s:
+      source: dsnoop:CARD=Loopback,DEV=1,SUBDEV=0
+      sendspin_own_port: 8941
+      sendspin_ma_url: "ws://wohnen.iselin.net:8927/sendspin"
+      sendspin_ma_name: "bluetooth_{{ ansible_facts['hostname'] }}"

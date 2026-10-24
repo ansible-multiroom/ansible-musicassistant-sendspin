@@ -5,6 +5,7 @@
     name:
       - git
       - ffmpeg
+      - python3-packaging
     state: present
 
 - name: Create user for musicassistant
