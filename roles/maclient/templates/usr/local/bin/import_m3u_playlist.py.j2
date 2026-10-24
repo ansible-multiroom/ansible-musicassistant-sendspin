@@ -1,0 +1,145 @@
+#!/opt/maclient/bin/python3.14
+# {{ warning_message }}
+import argparse
+import asyncio
+import aiohttp
+import os
+from pathlib import Path
+from music_assistant_client import MusicAssistantClient
+from music_assistant_models.errors import AuthenticationFailed
+
+# Configuration
+MASS_SERVER = "http://localhost:8095"
+TOKEN_FILE_NAME = "ma_access_token"
+
+# only needed when playlist starts with absolute path names
+# not the case for normal mpd playlists
+MPD_PATH_PREFIX_TO_REMOVE = ""
+
+def parse_m3u(file_path):
+    """Reads the m3u file and puts all paths to the tracks list"""
+    tracks = []
+    if not os.path.exists(file_path):
+        print(f"ERROR: M3U-File {file_path} not found")
+        return tracks
+        
+    with open(file_path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            # Ignore all empty and comment lines
+            if line.startswith("#") or not line:
+                continue
+            tracks.append(line)
+    return tracks
+
+async def main():
+
+   # get input file and output playlist name
+
+   parser = argparse.ArgumentParser()
+   parser.add_argument("--inputm3u", dest="inputm3u")
+   parser.add_argument("--playlistname", dest="playlistname")
+   args = parser.parse_args()
+
+   if args.inputm3u:
+       inputfile = args.inputm3u
+       print(f"inputfile: {inputfile}")
+   else:
+       print("ERROR: input filename missing")
+       return
+
+   if args.playlistname:
+       playlistname = args.playlistname
+       print(f"playlistname: {playlistname}")
+   else:
+       print("ERROR: playlistname missing")
+       return
+
+   # get musicassistant access token
+   
+   try: 
+       script_dir = Path(__file__).resolve().parent
+       token_file = script_dir / TOKEN_FILE_NAME
+       token = token_file.read_text(encoding="utf-8").strip()
+   except:
+       print(f"Could not read {token_file}")
+       return
+
+   async with aiohttp.ClientSession() as session:
+
+        ### Get file list from m3u file 
+        mpd_tracks = parse_m3u(inputfile)
+        if not mpd_tracks:
+            return
+        print(f"Total size of input playlist: {len(mpd_tracks)}")
+  
+        try: 
+            async with MusicAssistantClient(MASS_SERVER, token=token, aiohttp_session=session) as client:
+                ### Wait until variables are populated
+                init_ready = asyncio.Event()
+                listen_task = asyncio.create_task(client.start_listening(init_ready))
+                await init_ready.wait()
+    
+                ### find local fs provider
+                local_fs_provider = next(
+                    (p for p in client.providers if p.domain == "filesystem_local" and p.available), 
+                    None
+                )
+                
+                if not local_fs_provider:
+                    print("Error: No 'filesystem_local'-Provider found in client.providers")
+                    return
+                
+                provider_prefix = local_fs_provider.instance_id
+                print(f"Musicassistant local provider prefix: {provider_prefix}")
+    
+                ### Find or create playlist in musicassistant
+                playlists = await client.music.get_library_playlists()
+                playlist = next((p for p in playlists if p.name == playlistname), None)
+                
+                if not playlist:
+                    print(f"Creating '{playlistname}'...")
+                    playlist = await client.music.create_playlist(playlistname)
+                
+                playlist_id = playlist.item_id
+                valid_ma_uris = []
+    
+                ### Find tracks via URI
+                print("Building MA Playlist...\n")
+                for mpd_path in mpd_tracks:
+                    # remove prefix if required
+                    rel_path = mpd_path
+                    if MPD_PATH_PREFIX_TO_REMOVE and rel_path.startswith(MPD_PATH_PREFIX_TO_REMOVE):
+                        rel_path = rel_path[len(MPD_PATH_PREFIX_TO_REMOVE):]
+                    
+                    # remove leading slash if present
+                    rel_path = rel_path.lstrip("/")
+                    
+                    # Generate MA URI
+                    ma_uri = f"{provider_prefix}://track/{rel_path}"
+                    
+                    try:
+                        # Check if track findable by uri
+                        track_item = await client.music.get_item_by_uri(ma_uri)
+                        print(f"Track found: {track_item.name} ({rel_path})")
+                        valid_ma_uris.append(track_item.uri)
+                    except:
+                        # If not, print Name/Path
+                        print(f"ERROR: Track {ma_uri} not found, skipping")
+        
+                ### Add found tracks to ma playlist
+                if valid_ma_uris:
+                    print(f"\nAdding {len(valid_ma_uris)} (of {len(mpd_tracks)}) tracks to playlist '{playlistname}'...")
+                    await client.music.add_playlist_tracks(
+                        db_playlist_id=playlist_id,
+                        uris=valid_ma_uris
+                    )
+                    print("\nPlaylist successfully created/updated")
+                else:
+                    print("\nNo matching tracks found")
+        except AuthenticationFailed as err:
+            print(f"\nError: '{err}', check {token_file}")
+            return
+
+if __name__ == "__main__":
+    asyncio.run(main())
