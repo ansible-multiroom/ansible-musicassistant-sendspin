@@ -9,3 +9,20 @@ plumbings:
     a2a:
       source: bluealsa
       sink: "dmix:CARD=sndrpihifiberry,DEV=0"
+
+## for vwbridge, VLAN
+
+vwbridge_vlan_if: eth0
+vwbridge_vlan: 500
+
+## for vwbridge, WIFI
+
+vwbridge_wifi_if: wlan0
+vwbridge_wifi_ssid: sqalix
+vwbridge_wifi_dict:
+  mode: ap
+  band: bg
+  channel: 3
+vwbridge_wifi_sec_pmf: 1
+vwbridge_wifi_sec_protos:
+  - rsn

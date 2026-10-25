@@ -1,0 +1,74 @@
+---
+
+- name: create wifibridge
+  community.general.nmcli:
+    type: bridge
+    conn_name: wifibridge
+    ifname: br0
+    method4: disabled
+    method6: disabled
+    state: present
+
+- name: create vlan if
+  community.general.nmcli:
+    type: vlan
+    conn_name: "vlan{{ vwbridge_vlan }}"
+    slave_type: bridge
+    master: br0
+    vlanid: "{{ vwbridge_vlan }}"
+    vlandev: "{{ vwbridge_vlan_if }}"
+    method4: disabled
+    method6: disabled
+    state: present
+
+- name: Create show_connected_macs.sh
+  ansible.builtin.template:
+    src: usr/local/bin/show_connected_macs.sh.j2
+    dest: /usr/local/bin/show_connected_macs.sh
+    mode: '0755'
+    group: root
+    owner: root
+
+- name: Get Connection status of access point
+  ansible.builtin.command: >
+    nmcli -g GENERAL.STATE connection show wifiap
+  register: connection_state
+  check_mode: false
+  failed_when: false
+  changed_when: false
+
+- name: Inform about skipping
+  when: connection_state.stdout == 'activated'
+  ansible.builtin.debug:
+    msg:
+      - Skipping AP configuration as it is active already.
+      - Remove it on the target host manually to force configuration with
+      - nmcli c delete wifiap
+
+- name: Configure AP when not active
+  when: connection_state.stdout != 'activated'
+  block: 
+
+    - name: Get Wifi Password to set
+      ansible.builtin.pause:
+        prompt: "Enter Passwort to set for SSID {{ vwbridge_wifi_ssid }}"
+      register: wifi_password
+    
+    - name: create wifi ap if
+      community.general.nmcli:
+        type: wifi
+        conn_name: wifiap
+        ifname: "{{ vwbridge_wifi_if }}"
+        slave_type: bridge
+        master: br0
+        ssid: "{{ vwbridge_wifi_ssid }}"
+        wifi: "{{ vwbridge_wifi_dict }}"
+        wifi_sec:
+          key-mgmt: wpa-psk
+          psk: "{{ wifi_password.user_input }}"
+          pmf: "{{ vwbridge_wifi_sec_pmf }}"
+          proto: "{{ vwbridge_wifi_sec_protos }}"
+        method4: disabled
+        method6: disabled
+        state: present
+      notify: Reapply wifi configuration

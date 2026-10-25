@@ -1,0 +1,6 @@
+---
+
+- name: Reapply wifi configuration
+  ansible.builtin.shell:
+    cmd: "nmcli c down wifiap; sleep 1; nmcli c up wifiap"
+  ignore_errors: "{{ ansible_check_mode }}"
