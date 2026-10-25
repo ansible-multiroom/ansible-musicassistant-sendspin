@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+# {{ warning_message }}
+iw dev {{ vwbridge_wifi_if }} station dump | sed -ne "s/^Station \(.*\) (on {{ vwbridge_wifi_if }})/\1/p"

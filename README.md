@@ -39,6 +39,7 @@ pre made container for audio assistant but install it from source.
 * [`musicassistant`](roles/musicassistant/README.md): Downloads and install the current version of music assistant server from github
 * [`plumbing`](roles/plumbing/README.md): Builds up all audio sources and sinks in your house to build the multiroom system
 * [`maclient`](roles/maclient/README.md): Installs a venv with the music assistant client library and a demo tool to migrate mpd playlists to musicassistant
+* [`vwbridge`](roles/vwbridge/README.md): Configures a wired Raspi as WLAN extender.
 
 For more details, please check the README files in the respective role directories
 
@@ -83,5 +84,3 @@ You can use `--tags` to select only some roles and/or `--limit` to select only s
 ### Do it
 
 Finally, remove the "C" from the `ansible-playbook` command to really apply the changes.
-
-

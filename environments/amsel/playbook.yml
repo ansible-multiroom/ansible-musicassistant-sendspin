@@ -36,3 +36,10 @@
   roles:
     - maclient
   tags: maclient
+
+- name: Configure vwbridge
+  hosts: vwbridge
+  become: true
+  roles:
+    - vwbridge
+  tags: vwbridge
