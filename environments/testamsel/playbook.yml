@@ -12,13 +12,14 @@
         owner: root
         group: root
       check_mode: false
+  tags:
+    - always
 
 - name: Configure musicassistant
   hosts: musicassistants
   become: true
   roles:
     - smb_mount
-    - python314
     - musicassistant
   tags: musicassistant
 

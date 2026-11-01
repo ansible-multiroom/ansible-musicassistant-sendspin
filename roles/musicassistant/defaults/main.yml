@@ -1,0 +1,13 @@
+---
+
+musicassistant_user: musicassistant
+# musicassistant_group: musicassistant
+
+musicassistant_data_dir: /var/lib/musicassistant
+
+musicassistant_subid_count: 65536
+musicassistant_subuid_start: 200000
+musicassistant_subgid_start: 200000
+
+musicassistant_image: ghcr.io/music-assistant/server:latest
+musicassistant_container_name: music-assistant

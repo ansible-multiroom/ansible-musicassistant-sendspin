@@ -1,0 +1,33 @@
+# {{ warning_message }}
+[Unit]
+Description=Music Assistant Server
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+
+User={{ musicassistant_user }}
+Group={{ musicassistant_user }}
+Environment=HOME=/home/{{ musicassistant_user }}
+
+Delegate=yes
+
+ExecStart=/usr/bin/podman run \
+    --name {{ musicassistant_container_name }} \
+    --rm \
+    --network host \
+    --volume {{ musicassistant_data_dir }}:/data \
+    --volume {{ smb_mount_target_dir }}:/media/music:ro \
+    {{ musicassistant_image }}
+
+ExecStop=/usr/bin/podman stop --time 30 {{ musicassistant_container_name }}
+
+Restart=always
+RestartSec=10
+
+TimeoutStartSec=900
+TimeoutStopSec=45
+
+[Install]
+WantedBy=multi-user.target

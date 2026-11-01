@@ -1,6 +1,6 @@
 ---
 
-- name: Restart musicassistant
+- name: Restart Music Assistant
   ansible.builtin.systemd:
     name: musicassistant.service
     daemon_reload: yes
