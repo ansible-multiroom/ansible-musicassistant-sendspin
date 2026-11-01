@@ -57,17 +57,30 @@ Host groups:
 
 ## Install it
 
-### Preconditions
-
-All your target pis are running at least debian trixie and are reachable in the network, preferrably via a hostname (and not only via an IP address).
-
-You can ssh into them without password (either as user `pi` and `pi` can become root without password, or directly as `root`).
+### Preconditions Ansible host
 
 You have installed the dependencies on your ansible host:
 
 ~~~
 ansible-galaxy collection install -r ./requirements.yml
 ~~~
+
+
+### Preconditions Raspberry Pis
+
+All your target pis are running at least debian trixie and are reachable in the network, preferrably via a hostname (and not only via an IP address).
+
+You can ssh into them without password (either as user `pi` and `pi` can become root without password, or directly as `root`).
+
+You have verified that the audio hats work and the internal sound card is disabled:
+
+* use `aplay -L` to show the available audio cards. You should see e.g. `hw:CARD=sndrpihifiberry,DEV=0` for hifiberry cards
+* adjust `/boot/firmware/config.txt`:
+   * for older hifiberry cards, you might need
+      * `dtoverlay=hifiberry-dac` for the miniamp hat
+      * `dtoverlay=hifiberry-dacplusadc` for the dac+adc hat
+   * `#dtparam=audio=on` to disable the internal audio card
+   * `dtoverlay=disable-wifi` if you don't need wifi
 
 ### Create a new environment (only the first time)
 

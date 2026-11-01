@@ -59,6 +59,7 @@
   changed_when: >-
     not ansible_check_mode and musicassistant_image_pull.changed
   notify: Restart Music Assistant
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Create musicassistant systemd service
   ansible.builtin.template:
