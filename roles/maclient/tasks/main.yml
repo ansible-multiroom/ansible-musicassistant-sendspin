@@ -16,6 +16,13 @@
     mode: '0755'
   ignore_errors: "{{ ansible_check_mode }}"
 
+- name: Install packages for venv
+  ansible.builtin.apt:
+    name:
+      - python3-venv
+      - python3-packaging
+    state: present
+
 - name: Create virtenv for maclient
   become: true
   become_user: maclient
@@ -26,7 +33,7 @@
       - music-assistant-client
     state: present
     virtualenv: /opt/maclient
-    virtualenv_command: /opt/python314/bin/python3.14 -m venv
+    virtualenv_command: /usr/bin/python3 -m venv
   ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Create import_m3u_playlist.py script

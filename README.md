@@ -34,7 +34,6 @@ pre made container for audio assistant but install it from source.
 ### Ansible Roles
 
 * [`asound_conf`](roles/asound_conf/README.md): Configures a default data rate for `dsnoop` and `dmix` devices
-* [`python314`](roles/python314/README.md): required for musicassistant
 * [`smb_mount`](roles/smb_mount/README.md): mount remote audio library read only, useful for musicassistant
 * [`musicassistant`](roles/musicassistant/README.md): Downloads and install the current version of music assistant server from github
 * [`plumbing`](roles/plumbing/README.md): Builds up all audio sources and sinks in your house to build the multiroom system
@@ -64,9 +63,33 @@ All your target pis are running at least debian trixie and are reachable in the 
 
 You can ssh into them without password (either as user `pi` and `pi` can become root without password, or directly as `root`).
 
+You have installed the dependencies on your ansible host:
+
+~~~
+ansible-galaxy collection install -r ./requirements.yml
+~~~
+
+### Create a new environment (only the first time)
+
+Create an environment directory:
+
+~~~
+cd environments
+mkdir myown
+cd myown
+~~~
+
+Populate it:
+
+~~~
+cp -a ../testamsel/inventory ../testamsel/playbook.yml .
+cp -a ../testamsel/group_vars .
+mkdir host_vars
+~~~
+
 ### Configure it
 
-Populate your `inventory`, put (at least) one host into the `[musicassistants]` group, put at least one host into the [`plumbed`] group. Usually, your server host is in both groups.
+Adjust the `inventory`, put (at least) one host into the `[musicassistants]` group, put at least one host into the [`plumbed`] group. Usually, your server host is in both groups.
 
 Configure the `plumbing` variable for each host according to your needs in the `host_vars` directory.
 
@@ -79,7 +102,7 @@ cd environments/testamsel
 ANSIBLE_CONFIG=../../ansible.cfg ansible-playbook -CD -i inventory playbook.yml -u pi
 ~~~
 
-You can use `--tags` to select only some roles and/or `--limit` to select only some target hosts. 
+You can use `--tags` to select only some roles and/or `--limit` to select only some target hosts.
 
 ### Do it
 

@@ -1,110 +1,70 @@
 ---
 
-- name: Install system dependencies for music assistant
+- name: Install podman and rootless dependencies
   ansible.builtin.apt:
     name:
-      - git
-      - ffmpeg
-      - python3-packaging
+      - podman
+      - uidmap
+      - fuse-overlayfs
     state: present
+  notify: Restart Music Assistant
 
 - name: Create user for musicassistant
   ansible.builtin.user:
-    name: musicassistant
+    name: "{{ musicassistant_user }}"
     system: true
-    groups: audio
     shell: /usr/sbin/nologin
+  notify: Restart Music Assistant
 
-- name: Create dirs for musicassistant
+- name: Create musicassistant data dir
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ musicassistant_data_dir }}"
     state: directory
-    owner: musicassistant
-    group: musicassistant
+    owner: "{{ musicassistant_user }}"
+    group: "{{ musicassistant_user }}"
     mode: '0755'
-  loop:
-    - /opt/musicassistant
-    - /var/lib/musicassistant
-    - /usr/src/musicassistant
+  notify: Restart Music Assistant
 
-- name: clone Music Assistant locally
+- name: Configure /etc/subuid
+  ansible.builtin.lineinfile:
+    path: /etc/subuid
+    regexp: '^{{ musicassistant_user }}:'
+    line: "{{ musicassistant_user }}:{{ musicassistant_subuid_start }}:{{ musicassistant_subid_count }}"
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart Music Assistant
+
+- name: Configure /etc/subgid
+  ansible.builtin.lineinfile:
+    path: /etc/subgid
+    regexp: '^{{ musicassistant_user }}:'
+    line: "{{ musicassistant_user }}:{{ musicassistant_subgid_start }}:{{ musicassistant_subid_count }}"
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart Music Assistant
+
+- name: Download container if newer
   become: true
-  become_user: musicassistant
-  ansible.builtin.git:
-    repo: https://github.com/music-assistant/server.git
-    dest: /usr/src/musicassistant
-    version: stable
+  become_user: "{{ musicassistant_user }}"
+  containers.podman.podman_image:
+    name: ghcr.io/music-assistant/server
+    tag: latest
+    pull: true
     force: true
-  ignore_errors: "{{ ansible_check_mode }}"
-  register: musicassistant_git
-  notify: Restart musicassistant
+  register: musicassistant_image_pull
+  changed_when: >-
+    not ansible_check_mode and musicassistant_image_pull.changed
+  notify: Restart Music Assistant
 
-- name: Prepare musicassistant pip environment
-  become: true
-  become_user: musicassistant
-  ansible.builtin.pip:
-    name: 
-      - pip
-      - setuptools
-      - wheel
-      - uv
-    state: present
-    virtualenv: /opt/musicassistant
-    virtualenv_command: /opt/python314/bin/python3.14 -m venv
-  ignore_errors: "{{ ansible_check_mode }}"
-  notify: Restart musicassistant
-
-- name: Reinstall musicassistant if git changed
-  when: musicassistant_git.changed
-  block:
-
-    - name: Install Music Assistant Dependencies
-      become: true
-      become_user: musicassistant
-      ansible.builtin.pip:
-        name: 
-          - "hass-client"
-          - "music-assistant-frontend"
-        executable: /opt/musicassistant/bin/pip
-        extra_args: "--upgrade"
-      environment:
-        TMPDIR: "/var/tmp"
-        TEMP: "/var/tmp"
-        TMP: "/var/tmp"
-      ignore_errors: "{{ ansible_check_mode }}"
-      notify: Restart musicassistant
-    
-    - name: Install Music Assistant
-      become: true
-      become_user: musicassistant
-      ansible.builtin.pip:
-        name: "/usr/src/musicassistant"
-        editable: true
-        executable: /opt/musicassistant/bin/pip
-        extra_args: "--force-reinstall"
-      register: musicassistant_pip
-      ignore_errors: "{{ ansible_check_mode }}"
-      environment:
-        TMPDIR: "/var/tmp"
-        TEMP: "/var/tmp"
-        TMP: "/var/tmp"
-      notify: Restart musicassistant
-
-- name: Create systemd service for Music Assistant
-  ansible.builtin.copy:
+- name: Create musicassistant systemd service
+  ansible.builtin.template:
+    src: etc/systemd/system/musicassistant.service.j2
     dest: /etc/systemd/system/musicassistant.service
-    content: |
-      [Unit]
-      Description=Music Assistant Server
-      After=network.target
-      [Service]
-      Type=simple
-      User=musicassistant
-      Group=musicassistant
-      Environment="PATH=/opt/musicassistant/bin:/usr/local/bin:/usr/bin:/bin"
-      ExecStart=/opt/musicassistant/bin/python3 -m music_assistant --data-dir /var/lib/musicassistant
-      Restart=always
-      RestartSec=10
-      [Install]
-      WantedBy=multi-user.target
-  notify: Restart musicassistant
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart Music Assistant
