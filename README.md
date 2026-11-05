@@ -1,46 +1,36 @@
 # Motivation
 
-I am running my self built [multiroom solution](https://github.com/ansible-multiroom/ansible-multiroom-audio) for
-multiple years now.
+I have been running my self built [multiroom solution](https://github.com/ansible-multiroom/ansible-multiroom-audio) for multiple years now. You can find a short description of my old implementation at the bottom.
 
-While I am quite happy with it, times are changing and there are new players in town. This repo shall implement
-the same feature set but with modern tools
+While I was quite happy with it, times are changing and there are new players in town. This repo implements the same feature set but with modern tools:
 
 * [musicassistant](https://www.music-assistant.io/) as core component to select the music that is played
 * [sendspin](https://www.sendspin-audio.com/) for synchronous multiroom audio
 
-## Old Implementation and Feature Set
+## Hardware
 
-As **hardware**, I use **raspberrry pis** and **[hifiberry](https://www.hifiberry.com/) audio HATs** that are connected
-either to classic HiFi-equipment with an amp and decent loudspeakers or directly to a pair of loudspeakers when the HAT
-has a built in amp.
+I use **raspberry pis** with **[hifiberry](https://www.hifiberry.com/) audio HATs** that are connected
+either to classic HiFi-equipment with an amp and decent loudspeakers or directly to a pair of loudspeakers when the HAT has a built in amp. Any other audio HATs will work too, but you will have use the proper ALSA device names in the configuration. Don't use the builtin audio output if you love your ears.
 
-As **software**, I used [mpd](https://www.musicpd.org/) to select the music to play (I have collection of about 100K MP3 and
-FLAC files) and [snapcast](https://github.com/snapcast/snapcast) to distribute the music synchronously to my rooms. This
-was glued together with some [ALSA](https://en.wikipedia.org/wiki/Advanced_Linux_Sound_Architecture) tricks.
+For the Music Assistant host, the bare minimum is a Pi 4 with 2G of RAM (more is better), for audio satellites (pure audio sources and sinks), even a Pi Zero 2 is sufficient.
 
-In addition to play music from files, I also supported playing audio captured from the soundcard (e.g. when playing
-a vinyl record) or delivered via bluetooth e.g. from a mobile using [bluez-alsa](https://github.com/arkq/bluez-alsa).
-
-As most native mpd clients had one or the other bug or were not in active development any more, I added web frontends for
-mpd ([ampd](https://github.com/rain0r/ampd), [rompr](https://fatg3erman.github.io/RompR/)) with mixed success. Especially rompr
-was not able to deal with a collection of more than 100K audio files and playlists with 1000 songs or more.
-
-## New Implementation
-
-Too keep the memory footprint as small as possible (most of my Raspberry Pis have only 2GB of RAM), I don't use the
-pre made container for audio assistant but install it from source.
+## Software
 
 ### Ansible Roles
 
-* [`asound_conf`](roles/asound_conf/README.md): Configures a default data rate for `dsnoop` and `dmix` devices
+For the central Music Assistant node:
 * [`smb_mount`](roles/smb_mount/README.md): mount remote audio library read only, useful for musicassistant
 * [`musicassistant`](roles/musicassistant/README.md): Downloads and install the current version of music assistant server from github
-* [`plumbing`](roles/plumbing/README.md): Builds up all audio sources and sinks in your house to build the multiroom system
 * [`maclient`](roles/maclient/README.md): Installs a venv with the music assistant client library and a demo tool to migrate mpd playlists to musicassistant
-* [`vwbridge`](roles/vwbridge/README.md): Configures a wired Raspi as WLAN extender.
 
-For more details, please check the README files in the respective role directories
+For plumbing audio sinks and sources on all nodes to Music Assistant:
+* [`asound_conf`](roles/asound_conf/README.md): Configures a default data rate for `dsnoop` and `dmix` devices
+* [`plumbing`](roles/plumbing/README.md): Builds up all audio sources and sinks in your house to build the multiroom system
+
+Network Helper for selected hosts:
+* [`vwbridge`](roles/vwbridge/README.md): Configures a wired Pi as WLAN extender.
+
+For more details, please check the linked README files in the respective role directories
 
 ### Ansible Tags and Host Groups
 
@@ -48,18 +38,20 @@ This describes the settings and configuration used for the [testamsel](environme
 
 Tags:
 * `musicassistant`: Roles needed to run the music assistant server
+* `maclient`: Role to install the music assistant client library
 * `plumbing`: Roles needed to make plumbing work
-* `maclient`: Roles to install the music assistant client library
+* `vwbridge`: Role to make a wired Pi a WLAN extender
 
 Host groups:
-* `musicassistants`: Host(s) where the music assistant server (and, if wanted, music assistant client) should be installed
-* `plumbed`: Hosts(s) where any physical audio source or sink is required
+* `musicassistants`: Host(s) where the music assistant server and a music assistant client are to be installed
+* `plumbed`: Host(s) where any physical audio source or sink is required
+* `vwbridge`: Wired host(s) to be used as WLAN extender
 
 ## Install it
 
 ### Preconditions Ansible host
 
-You have installed the dependencies on your ansible host:
+Install the dependencies on your ansible host:
 
 ~~~
 ansible-galaxy collection install -r ./requirements.yml
@@ -92,7 +84,7 @@ mkdir myown
 cd myown
 ~~~
 
-Populate it:
+Populate it e.g. from the `testamsel` environment
 
 ~~~
 cp -a ../testamsel/inventory ../testamsel/playbook.yml .
@@ -120,3 +112,11 @@ You can use `--tags` to select only some roles and/or `--limit` to select only s
 ### Do it
 
 Finally, remove the "C" from the `ansible-playbook` command to really apply the changes.
+
+## Old Implementation
+
+I used [mpd](https://www.musicpd.org/) to select the music to play (I have collection of about 100K MP3 and FLAC files) and [snapcast](https://github.com/snapcast/snapcast) to distribute the music synchronously to my rooms. This was glued together with some [ALSA](https://en.wikipedia.org/wiki/Advanced_Linux_Sound_Architecture) tricks.
+
+In addition to play music from files, I also supported playing audio captured from the soundcard (e.g. when playing a vinyl record) or delivered via bluetooth e.g. from a mobile using [bluez-alsa](https://github.com/arkq/bluez-alsa).
+
+As most native mpd clients had one or the other bug or were not in active development any more, I added web frontends for mpd ([ampd](https://github.com/rain0r/ampd), [rompr](https://fatg3erman.github.io/RompR/)) with mixed success. Especially rompr was not able to deal with a collection of more than 100K audio files and playlists with 1000 songs or more.
