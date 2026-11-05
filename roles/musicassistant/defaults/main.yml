@@ -1,7 +1,6 @@
 ---
 
 musicassistant_user: musicassistant
-# musicassistant_group: musicassistant
 
 musicassistant_data_dir: /var/lib/musicassistant
 

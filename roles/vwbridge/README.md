@@ -3,13 +3,13 @@
 * tested on `bookworm` and `trixie`, uses `nmcli` exclusively for all network configuration
 * very specific use case: WLAN traffic on separate VLAN
 * only creates, never cleans up/modifies.
-* there are bugs in older versions of `community.general.nmcli`, i had success after
+* there are bugs in older versions of `community.general.nmcli`, I had success after
 upgrading to `8.6.0`. Try `ansible-galaxy collection install community.general --upgrade` if in doubt.
 
 The role does not check for conflicts with other NetworkManager
 `wifi` connections. Please ensure that there is **no other wifi connection** defined on the target.
 If `nmcli c` still shows one or more connections of type `wifi`, delete
-them one by one with `nmcli c delete ...` first. 
+them one by one with `nmcli c delete ...` first.
 
 ## use case
 
@@ -24,20 +24,20 @@ auto configuration setup for IPv4 and/or IPv6 (DHCP, SLAAC, ...).
 
 ## implementation
 
-The role uses the ansible implementation of `nmcli` to 
+The role uses the ansible implementation of `nmcli` to
 
 * create a VLAN interface with the  connection name `vlanXXXX` (where `XXXX` is the VLAN number)
-* creates a wifi access point with the connection name `wifiap` (tested with WPA PSK). 
+* creates a wifi access point with the connection name `wifiap` (tested with WPA PSK).
 * bridges those two together using `br0` with the connection name `wifibridge`
 
-None of those interfaces gets an IP configuration, this is pure layer 2
+None of those interfaces gets an IP configuration, all is pure layer 2
 magic. Wireless clients connecting to this AP get their IPv4/v6 configuration
 via the same mechanisms as the ones connecting to your "main" access point.
 
 You can therefore use the same SSID as your main access point (but then you should
 also use the same pre shared key). This should give you some automatic failover.
-If you chose a different SSID, you need to decide what client connects to what
-SSID.
+If you chose a different SSID, you will need to configure the chosen SSID on each
+client.
 
 Ansible variables to set (there are no defaults) for the vlan:
 

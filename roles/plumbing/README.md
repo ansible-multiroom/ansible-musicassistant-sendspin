@@ -29,7 +29,7 @@ The components are configured via the `plumbings` variable which is a list of co
 
 ### Rules
 
-* the `bluealsa` soundcard is ephemeral and is really usable only as long as there is an actual bluetooth connection. On the other hand, both **a2h** and **a2s** are only working properly (i.e. start their http/sendspin service) when there is actually audio data available. Therefore **a2h** and **a2s** must not directly **capture** from `bluealsa`
+* the `bluealsa` soundcard is ephemeral and is really usable only as long as there is an actual bluetooth connection. On the other hand, both **a2h** and **a2s** are only working properly (i.e. start their http/sendspin service) when there is actually audio data available. Therefore **a2h** and **a2s** must not directly **capture** from `bluealsa`. See below for examples with `bluealsa`.
 * **s2a** is used as part of the multiroom experience and should play to an alsa sink that is directly connected to physical audio sink (e.g. loudspeaker). Otherwise you would introduce varying delays that would ruin the synchronous multiroom experience.
 * While *sendspin* usually relies on autodetection via mDNS, the implementation here fully relies on the sendspin clients to actively contact audioassistant.
 * Each plumbing has a `name` key. The value should consist of lower case letters, numbers, and underscores only. It is used for file and directory names etc. and must be unique for that target host.
@@ -142,7 +142,7 @@ See also the [defaults](defaults/main.yml).
 ## Implementation hints
 
 * The role is fully idempotent
-* On each host with `plumbings != []", the following checks are applied to the elements of `plumbings`:
+* On each host with `plumbings != []`, the following checks are applied to the elements of `plumbings`:
    * The `sendspin-cli` binary is installed when there is at least one `a2s` or `s2a` key in one of the connections
-   * The `snd_aloop` module which creates the `Loopback` audio card is installed when there is at least one connection with more than 2 keys. The first is the `name` and the others must be components. So with 3 keys or more you will need the `Loopback` audio card
+   * The `snd_aloop` module which creates the `Loopback` audio card is installed when there is at least one connection with more than 2 keys. The first key is always the `name` and the others must be components. So with 3 keys or more you will need the `Loopback` audio card
    * `bluealsa` is configured when there is at least one `a2a.source == 'bluealsa'`.
