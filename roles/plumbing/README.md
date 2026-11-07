@@ -23,6 +23,8 @@ The following base components are available
 
 The **a2a** role also supports the configuration of a `bluealsa` sound card (for **capture only**) so that you can stream audio from e.g. your mobile via bluetooth to musicassistant.
 
+Note that we use sendspin either for *capture* or *play*. Although the sendspin protocol would support both directions simultaneously, I decided against making use of this. The main reason is that one single device may have more than one *capture* source (e.g. bluetooth and line in) and usually one *play* sink only. This adds some bloat to Musicassistant but keeps the naming uniform and the ansible code simple and symmetric.
+
 ## Variables
 
 The components are configured via the `plumbings` variable which is a list of connection dicts. This variable must be set explicitly for each target host in order to **play** or **capture** audio. From an ansible point of view, you can combine the base components in any combination, but there are some rules you should follow, leaving only a few combinations that really make sense. 
