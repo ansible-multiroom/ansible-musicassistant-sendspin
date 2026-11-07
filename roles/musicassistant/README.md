@@ -4,8 +4,6 @@ The role uses the official Music Assistant container and runs it from a systemd 
 
 The Web-GUI is reachable via `http://<target hostname or ip address>:8095/`
 
-Idempotency is implemented by checking whether the git download did any changes.
-
 ## Variables
 
 Usually, you don't need to set these variables and can just use the [defaults](defaults/main.yml)
