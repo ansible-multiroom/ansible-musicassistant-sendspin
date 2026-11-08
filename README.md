@@ -111,7 +111,7 @@ You can use `--tags` to select only some roles and/or `--limit` to select only s
 
 ### Do it
 
-Finally, remove the "C" from the `ansible-playbook` command to really apply the changes.
+Finally, remove the "C" from the `ansible-playbook` command to really apply the changes. Have a look at my [Music Assistant Application Document](/docs/musicassistant.md) for the initial configuration.
 
 ## Old Implementation
 
