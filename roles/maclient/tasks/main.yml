@@ -36,13 +36,16 @@
     virtualenv_command: /usr/bin/python3 -m venv
   ignore_errors: "{{ ansible_check_mode }}"
 
-- name: Create import_m3u_playlist.py script
+- name: Create example scripts
   ansible.builtin.template:
-    src: usr/local/bin/import_m3u_playlist.py.j2
-    dest: /usr/local/bin/import_m3u_playlist.py
+    src: "usr/local/bin/{{ item }}.j2"
+    dest: "/usr/local/bin/{{ item }}"
     owner: root
     group: root
     mode: '0755'
+  loop:
+    - import_m3u_playlist.py
+    - get_ma_items.py
 
 - name: Create dummy access token file if not here yet
   ansible.builtin.copy:
