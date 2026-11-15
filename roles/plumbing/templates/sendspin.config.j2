@@ -15,6 +15,7 @@ allow-unpaired = true
 control-socket = {{ sendspin_socket_dir }}/{{ item.name }}.socket
 state-dir = {{ sendspin_state_dir }}/{{ item.name }}
 {% else %}
+output = null
 input = {{ item.a2s.source }}
 name = {{ item.a2s.sendspin_ma_name }}
 server = {{ item.a2s.sendspin_ma_url }}
