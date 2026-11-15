@@ -5,7 +5,7 @@ I have been running my self built [multiroom solution](https://github.com/ansibl
 While I was quite happy with it, times are changing and there are new players in town. This repo implements the same feature set but with modern tools:
 
 * [musicassistant](https://www.music-assistant.io/) as core component to select the music that is played
-* [sendspin](https://www.sendspin-audio.com/) for synchronous multiroom audio
+* [sendspin](https://www.sendspin-audio.com/) for audio sources and synchronous multiroom audio playback
 
 ## Hardware
 
@@ -20,7 +20,7 @@ For the Music Assistant host, the bare minimum is a Pi 4 with 2G of RAM (more is
 
 For the central Music Assistant node:
 * [`smb_mount`](roles/smb_mount/README.md): mount remote audio library read only, useful for musicassistant
-* [`musicassistant`](roles/musicassistant/README.md): Downloads and install the current version of music assistant server from github
+* [`musicassistant`](roles/musicassistant/README.md): Downloads and deploys the current version of the music assistant container
 * [`maclient`](roles/maclient/README.md): Installs a venv with the music assistant client library and a demo tool to migrate mpd playlists to musicassistant
 
 For plumbing audio sinks and sources on all nodes to Music Assistant:
@@ -34,7 +34,7 @@ For more details, please check the linked README files in the respective role di
 
 ### Ansible Tags and Host Groups
 
-This describes the settings and configuration used for the [testamsel](environments/testamsel) environment. You should be able to use the [playbook](environments/testamsel/playbook.yml) and the [group_vars](environments/testamsel/group_vars/all.yml) unchanged and adjust the [inventory](environments/testamsel/inventory) only.
+This describes the settings and configuration used for the [testamsel](environments/testamsel) environment. You should be able to use the [playbook](environments/testamsel/playbook.yml) and the [group_vars](environments/testamsel/group_vars/all.yml) unchanged and adjust the [inventory](environments/testamsel/inventory) only. For a `vwbridge` example, checkout the [amsel](environments/amsel) environment.
 
 Tags:
 * `musicassistant`: Roles needed to run the music assistant server

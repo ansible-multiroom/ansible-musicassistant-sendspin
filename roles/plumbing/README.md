@@ -10,7 +10,7 @@ Without installing this role, musicassistant will only be able to play to the bu
 
 **Capturing audio** (or *recording audio*) is inputting audio data from an **audio source** like e.g. a microphone or a playlist player etc.
 
-For all audio, we only use **alsa** devices and all audio devices use the same audio format (currently `S16_LE/2/44100`). For *playing*, we always use the `dmix` alsa endpoint, for *capturing*, the `dsnoop` alsa endpoint. In contrast to the `hw` endpoint, these allow multiple simultaneous processes to play/capture audio - as long all processes use the same audio format.
+For all audio, we only use **alsa** devices and all audio devices use the same audio format (currently `S16_LE/2/44100`). For *playing*, we always use the `dmix` alsa endpoint, for *capturing*, the `dsnoop` alsa endpoint. In contrast to the `hw` endpoint, these allow multiple simultaneous processes to play/capture audio - as long as all processes use the same audio format.
 
 ## Components
 
@@ -23,7 +23,7 @@ The following base components are available
 
 The **a2a** role also supports the configuration of a `bluealsa` sound card (for **capture only**) so that you can stream audio from e.g. your mobile via bluetooth to musicassistant.
 
-Note that we use sendspin either for *capture* or *play*. Although the sendspin protocol would support both directions simultaneously, I decided against making use of this. The main reason is that one single device may have more than one *capture* source (e.g. bluetooth and line in) and usually one *play* sink only. This adds some bloat to Musicassistant but keeps the naming uniform and the ansible code simple and symmetric.
+Note that we use sendspin **either** for capture **or** play. Although the sendspin protocol would support both directions simultaneously, I decided against making use of this. The main reason is that one single device may have more than one *capture* source (e.g. bluetooth and line in) and usually one *play* sink only. This adds some bloat to Musicassistant but keeps the naming uniform and the ansible code simple and symmetric.
 
 ## Variables
 
@@ -34,7 +34,7 @@ The components are configured via the `plumbings` variable which is a list of co
 * the `bluealsa` soundcard is ephemeral and is really usable only as long as there is an actual bluetooth connection. On the other hand, both **a2h** and **a2s** are only working properly (i.e. start their http/sendspin service) when there is actually audio data available. Therefore **a2h** and **a2s** must not directly **capture** from `bluealsa`. See below for examples with `bluealsa`.
 * **s2a** is used as part of the multiroom experience and should play to an alsa sink that is directly connected to physical audio sink (e.g. loudspeaker). Otherwise you would introduce varying delays that would ruin the synchronous multiroom experience.
 * While *sendspin* usually relies on autodetection via mDNS, the implementation here fully relies on the sendspin clients to actively contact audioassistant.
-* Each plumbing has a `name` key. The value should consist of lower case letters, numbers, and underscores only. It is used for file and directory names etc. and must be unique for that target host.
+* Each plumbing has a `name` key. The value should consist of lower case letters, numbers, and underscores only. It is used for file and directory names etc. and must be unique for that target host. Should you decide to **change** the value of the `name` key after having deployed, you will need to cleanup all remnants on the target hosts manually after redeployment.
 
 ### Example 1: Sendspin Loudspeaker
 
@@ -43,7 +43,7 @@ plumbings:
   - name: loudspeaker_from_musitest
     s2a:
       sendspin_own_port: 8930
-      sendspin_ma_url: "ws://<your sendspin server name or ip address>:8927/sendspin"
+      sendspin_ma_url: "ws://<your musicassistant server name or ip address>:8927/sendspin"
       sendspin_ma_name: "{{ ansible_facts['hostname'] }}"
       sink: "dmix:CARD=sndrpihifiberry,DEV=0"
 ~~~
@@ -63,7 +63,7 @@ plumbings:
     a2s:
       source: "dsnoop:CARD=sndrpihifiberry,DEV=0"
       sendspin_own_port: 8940
-      sendspin_ma_url: "ws://<your sendspin server name or ip address>:8927/sendspin"
+      sendspin_ma_url: "ws://<your musicassistant server name or ip address>:8927/sendspin"
       sendspin_ma_name: "linein_{{ ansible_facts['hostname'] }}"
 ~~~
 
@@ -85,7 +85,7 @@ plumbings:
     a2s:
       source: dsnoop:CARD=Loopback,DEV=1,SUBDEV=0
       sendspin_own_port: 8941
-      sendspin_ma_url: "ws://<your sendspin server name or ip address>:8927/sendspin"
+      sendspin_ma_url: "ws://<your musicassistant server name or ip address>:8927/sendspin"
       sendspin_ma_name: "bluetooth_{{ ansible_facts['hostname'] }}"
 ~~~
 
@@ -96,7 +96,7 @@ Here we have **a2a** and **a2s** used for one plumbing, connected via a Loopback
 
 The semantics of the **a2a** keys should be obvious:
 
-* `source`: An alsa source. If it is called `bluealsa`, the ansible role configures `bluetoothd` with an agent and also `bluealsa`.
+* `source`: An alsa source. If it is called `bluealsa`, the ansible role configures both `bluetoothd` with an agent and `bluealsa`.
 * `sink`: An alsa sink.
 
 ### Example 4: Line In to http (can be used as musicassistant source)
