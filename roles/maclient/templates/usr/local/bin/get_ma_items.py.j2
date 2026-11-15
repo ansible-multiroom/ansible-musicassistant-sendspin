@@ -1,0 +1,55 @@
+#!/opt/maclient/bin/python3
+# {{ warning_message }}
+import json
+import os
+import urllib.request
+from pathlib import Path
+
+MASS_URL = "http://localhost:8095/api"
+TOKEN_FILE_NAME = "ma_access_token"
+WIDTH=35
+
+# get musicassistant access token
+try:
+   script_dir = Path(__file__).resolve().parent
+   token_file = script_dir / TOKEN_FILE_NAME
+   token = token_file.read_text(encoding="utf-8").strip()
+except:
+   print(f"Could not read {token_file}")
+   os._exit()
+
+def ma_command(command, args=None):
+   payload = {"command": command, "args": args or {}}
+   data = json.dumps(payload).encode("utf-8")
+   headers = {
+      "Content-Type": "application/json",
+      "Authorization": f"Bearer {token}",
+   }
+   req = urllib.request.Request(MASS_URL, data=data, headers=headers, method="POST")
+   with urllib.request.urlopen(req) as resp:
+      return json.loads(resp.read().decode("utf-8"))
+
+print("=== players/all ===")
+players = ma_command("players/all")
+for p in sorted(players, key=lambda x: x.get("name", "")):
+   if p.get("available"):
+      avail = "YES"
+   else:
+      avail = "NO"
+   print(f"{avail:3} {p['name']:<{WIDTH}} -> {p['player_id']}")
+
+print("\n=== music/radios/library_items ===")
+radios = ma_command("music/radios/library_items")
+for r in sorted(radios, key=lambda x: x.get("name", "")):
+   print(f"    {r['name']:<{WIDTH}} -> {r['uri']}")
+
+print("\n=== music/browse ===")
+root_items = ma_command("music/browse")
+for item in root_items:
+   # Sucht gezielt nach dem Sendspin-Ordner (oder anderen externen Eingängen)
+   # if "sendspin" in item.get("path", "").lower():
+   if True:
+      sub_items = ma_command("music/browse", {"path": item["path"]})
+      for sub in sub_items:
+         if sub.get("is_playable"):
+            print(f"    {sub['name']:<{WIDTH}} -> {sub['uri']}")
